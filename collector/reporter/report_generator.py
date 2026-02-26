@@ -2,7 +2,9 @@
 报告生成器 - 从 computed_factors 和原始数据表生成 HTML 日报。
 """
 import logging
+import base64
 from datetime import datetime
+import pytz
 from pathlib import Path
 from typing import Any
 
@@ -113,14 +115,14 @@ class ReportGenerator:
             INNER JOIN (
                 SELECT market, metal, MAX(date) AS max_date
                 FROM spot_prices_daily
-                WHERE date <= ? AND date >= date(?, '-3 days')
+                WHERE date <= ?
                 GROUP BY market, metal
             ) latest ON s.market = latest.market
                 AND s.metal = latest.metal
                 AND s.date = latest.max_date
             ORDER BY s.market, s.metal
             """,
-            (date, date),
+            (date,),
         )
 
         # 统一转换为 CNY
@@ -266,7 +268,8 @@ class ReportGenerator:
             渲染后的 HTML 字符串。
         """
         if date is None:
-            date = datetime.now().strftime("%Y-%m-%d")
+            tz_bj = pytz.timezone("Asia/Shanghai")
+            date = datetime.now(tz_bj).strftime("%Y-%m-%d")
 
         metrics = self.get_daily_metrics(date)
         inventory = self.get_inventory_snapshot(date)

@@ -19,6 +19,7 @@ import logging.config
 import sys
 import time
 from datetime import datetime
+import pytz
 from pathlib import Path
 
 # 确保项目根目录在 sys.path 中
@@ -57,7 +58,8 @@ def run_daily_pipeline(
         流程是否成功完成。
     """
     start_time = time.time()
-    today = target_date or datetime.now().strftime("%Y-%m-%d")
+    tz_bj = pytz.timezone("Asia/Shanghai")
+    today = target_date or datetime.now(tz_bj).strftime("%Y-%m-%d")
     logger.info("=" * 60)
     logger.info("🚀 贵金属日报流程启动 | 日期: %s | 环境: %s", today, ENVIRONMENT)
     logger.info("=" * 60)

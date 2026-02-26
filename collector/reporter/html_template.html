@@ -135,8 +135,16 @@
         }
 
         .missing {
-            color: #bdc3c7;
             font-style: italic;
+            opacity: 0.7;
+        }
+
+        .date-stale {
+            color: #7f8c8d;
+            font-size: 12px;
+            font-weight: normal;
+            font-style: normal;
+            margin-left: 4px;
         }
 
         /* 标签 */
@@ -239,8 +247,10 @@
                         <td>
                             {% if metrics.get('GOLD_dpi') %}
                             <span{% if metrics.get('GOLD_dpi', {}).get('date_suffix') %} class="missing" {% endif %}>{{
-                                metrics.get('GOLD_dpi', {}).get('value', 'N/A') }}{{ metrics.get('GOLD_dpi',
-                                {}).get('date_suffix', '') }}</span>
+                                metrics.get('GOLD_dpi', {}).get('value', 'N/A') }}</span>
+                                {% if metrics.get('GOLD_dpi', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('GOLD_dpi', {}).get('date_suffix') }}</span>
+                                {% endif %}
                                 <span
                                     class="tag tag-{{ 'high' if '高' in metrics.get('GOLD_dpi', {}).get('description', '') else ('medium' if '中' in metrics.get('GOLD_dpi', {}).get('description', '') else 'low') }}">
                                     {{ metrics.get('GOLD_dpi', {}).get('description', '') }}
@@ -250,8 +260,10 @@
                         <td>
                             {% if metrics.get('SILVER_dpi') %}
                             <span{% if metrics.get('SILVER_dpi', {}).get('date_suffix') %} class="missing" {% endif %}>
-                                {{ metrics.get('SILVER_dpi', {}).get('value', 'N/A') }}{{ metrics.get('SILVER_dpi',
-                                {}).get('date_suffix', '') }}</span>
+                                {{ metrics.get('SILVER_dpi', {}).get('value', 'N/A') }}</span>
+                                {% if metrics.get('SILVER_dpi', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('SILVER_dpi', {}).get('date_suffix') }}</span>
+                                {% endif %}
                                 <span
                                     class="tag tag-{{ 'high' if '高' in metrics.get('SILVER_dpi', {}).get('description', '') else ('medium' if '中' in metrics.get('SILVER_dpi', {}).get('description', '') else 'low') }}">
                                     {{ metrics.get('SILVER_dpi', {}).get('description', '') }}
@@ -265,16 +277,23 @@
                             class="{{ 'positive' if (metrics.get('GOLD_inv_change_pct', {}).get('value', 0) or 0) > 0 else ('negative' if metrics.get('GOLD_inv_change_pct') else 'missing') }}">
                             {% if metrics.get('GOLD_inv_change_pct') %}<span{% if metrics.get('GOLD_inv_change_pct',
                                 {}).get('date_suffix') %} class="missing" {% endif %}>{{
-                                "{:.2f}".format(metrics.get('GOLD_inv_change_pct', {}).get('value') | float) }}%{{
-                                metrics.get('GOLD_inv_change_pct', {}).get('date_suffix', '') }}</span>{% else
+                                "{:.2f}".format(metrics.get('GOLD_inv_change_pct', {}).get('value') | float) }}%</span>
+                                {% if metrics.get('GOLD_inv_change_pct', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('GOLD_inv_change_pct', {}).get('date_suffix')
+                                    }}</span>
+                                {% endif %}{% else
                                 %}N/A{% endif %}
                         </td>
                         <td
                             class="{{ 'positive' if (metrics.get('SILVER_inv_change_pct', {}).get('value', 0) or 0) > 0 else ('negative' if metrics.get('SILVER_inv_change_pct') else 'missing') }}">
                             {% if metrics.get('SILVER_inv_change_pct') %}<span{% if metrics.get('SILVER_inv_change_pct',
                                 {}).get('date_suffix') %} class="missing" {% endif %}>{{
-                                "{:.2f}".format(metrics.get('SILVER_inv_change_pct', {}).get('value') | float) }}%{{
-                                metrics.get('SILVER_inv_change_pct', {}).get('date_suffix', '') }}</span>{% else
+                                "{:.2f}".format(metrics.get('SILVER_inv_change_pct', {}).get('value') | float)
+                                }}%</span>
+                                {% if metrics.get('SILVER_inv_change_pct', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('SILVER_inv_change_pct', {}).get('date_suffix')
+                                    }}</span>
+                                {% endif %}{% else
                                 %}N/A{% endif %}
                         </td>
                     </tr>
@@ -298,24 +317,34 @@
                         <td>近月基差</td>
                         <td>{% if metrics.get('GOLD_basis') %}<span{% if metrics.get('GOLD_basis',
                                 {}).get('date_suffix') %} class="missing" {% endif %}>{{ metrics.get('GOLD_basis',
-                                {}).get('value', 'N/A') }}{{ metrics.get('GOLD_basis', {}).get('date_suffix', '')
-                                }}</span>{%
+                                {}).get('value', 'N/A') }}</span>
+                                {% if metrics.get('GOLD_basis', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('GOLD_basis', {}).get('date_suffix') }}</span>
+                                {% endif %}{%
                                 else %}<span class="missing">N/A</span>{% endif %}</td>
                         <td>{% if metrics.get('SILVER_basis') %}<span{% if metrics.get('SILVER_basis',
                                 {}).get('date_suffix') %} class="missing" {% endif %}>{{ metrics.get('SILVER_basis',
-                                {}).get('value', 'N/A') }}{{ metrics.get('SILVER_basis', {}).get('date_suffix', '')
-                                }}</span>{% else %}<span class="missing">N/A</span>{% endif %}</td>
+                                {}).get('value', 'N/A') }}</span>
+                                {% if metrics.get('SILVER_basis', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('SILVER_basis', {}).get('date_suffix') }}</span>
+                                {% endif %}{% else %}<span class="missing">N/A</span>{% endif %}</td>
                     </tr>
                     <tr>
                         <td>基差/现货 (%)</td>
                         <td>{% if metrics.get('GOLD_basis_rel') %}<span{% if metrics.get('GOLD_basis_rel',
                                 {}).get('date_suffix') %} class="missing" {% endif %}>{{ metrics.get('GOLD_basis_rel',
-                                {}).get('value', 'N/A') }}%{{ metrics.get('GOLD_basis_rel', {}).get('date_suffix', '')
-                                }}</span>{% else %}<span class="missing">N/A</span>{% endif %}</td>
+                                {}).get('value', 'N/A') }}%</span>
+                                {% if metrics.get('GOLD_basis_rel', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('GOLD_basis_rel', {}).get('date_suffix')
+                                    }}</span>
+                                {% endif %}{% else %}<span class="missing">N/A</span>{% endif %}</td>
                         <td>{% if metrics.get('SILVER_basis_rel') %}<span{% if metrics.get('SILVER_basis_rel',
                                 {}).get('date_suffix') %} class="missing" {% endif %}>{{ metrics.get('SILVER_basis_rel',
-                                {}).get('value', 'N/A') }}%{{ metrics.get('SILVER_basis_rel', {}).get('date_suffix', '')
-                                }}</span>{% else %}<span class="missing">N/A</span>{% endif %}</td>
+                                {}).get('value', 'N/A') }}%</span>
+                                {% if metrics.get('SILVER_basis_rel', {}).get('date_suffix') %}
+                                <span class="date-stale">{{ metrics.get('SILVER_basis_rel', {}).get('date_suffix')
+                                    }}</span>
+                                {% endif %}{% else %}<span class="missing">N/A</span>{% endif %}</td>
                     </tr>
                     <tr>
                         <td>期限结构</td>
