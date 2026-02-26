@@ -1,0 +1,46 @@
+name: Daily Precious Metals Report
+
+on:
+  schedule:
+    - cron: '30 0 * * *' # 每天北京时间 08:30 (UTC 00:30)
+  workflow_dispatch: # 支持手动触发
+
+permissions:
+  contents: write # 允许 push 数据库文件回仓库
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run daily pipeline
+        env:
+          PM_SMTP_SERVER: ${{ secrets.PM_SMTP_SERVER }}
+          PM_SMTP_PORT: ${{ secrets.PM_SMTP_PORT }}
+          PM_SMTP_USER: ${{ secrets.PM_SMTP_USER }}
+          PM_SMTP_PASS: ${{ secrets.PM_SMTP_PASS }}
+          PM_SMTP_FROM: ${{ secrets.PM_SMTP_FROM }}
+          PM_SMTP_TO: ${{ secrets.PM_SMTP_TO }}
+          PM_ENV: prod
+        run: python collector/run_daily.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update precious metals database [skip ci]"
+          file_pattern: 'data/precious_metals.db'
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
