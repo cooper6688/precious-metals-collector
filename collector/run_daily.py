@@ -189,7 +189,8 @@ def run_daily_pipeline(
         logger.info("📧 [阶段6] 发送邮件...")
         try:
             sender = EmailSender()
-            success = sender.send_email(html_report, today)
+            db_path = PROJECT_ROOT / "data" / "precious_metals.db"
+            success = sender.send_email(html_report, today, attachments=[db_path])
             if success:
                 logger.info("  ✅ 邮件发送成功")
             else:
