@@ -54,19 +54,31 @@ class CFTCFetcher:
         if year is None:
             year = datetime.now().year
 
-        # 尝试方法 1: pycot-reports
+        # 尝试方法 1: pycot-reports (带超时保护)
         try:
             records = self._fetch_via_pycot(year)
             if records:
+                logger.info("CFTC 抓取成功，本次使用数据源: [主源] pycot-reports")
                 return records
         except Exception:
-            logger.info("pycot-reports 不可用，回退到 CFTC 官方 CSV")
+            logger.info("pycot-reports 不可用或超时")
 
-        # 方法 2: 通过 CFTC Socrata Open Data API（当年无数据则回退去年）
+        # 方法 2: akshare 回退
+        try:
+            records = self._fetch_via_akshare()
+            if records:
+                logger.info("CFTC 抓取成功，本次使用数据源: [备用源1] akshare")
+                return records
+            logger.warning("akshare CFTC 获取失败，回退到官方 API")
+        except Exception:
+            logger.exception("akshare CFTC 异常")
+
+        # 方法 3: 通过 CFTC Socrata Open Data API（当年无数据则回退去年）
         for try_year in (year, year - 1):
             try:
                 records = self._fetch_via_api(try_year)
                 if records:
+                    logger.info("CFTC 抓取成功，本次使用数据源: [备用源2] CFTC Socrata API")
                     return records
                 logger.warning("CFTC API: %d 年无数据，尝试上一年", try_year)
             except Exception:
@@ -74,11 +86,23 @@ class CFTCFetcher:
         return []
 
     def _fetch_via_pycot(self, year: int) -> list[dict[str, Any]]:
-        """通过 pycot-reports 获取 COT 数据。"""
+        """通过 pycot-reports 获取 COT 数据（带超时保护）。"""
         import cot_reports as cot  # type: ignore
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 
         records: list[dict[str, Any]] = []
-        df = cot.cot_year(year=year, cot_report_type="legacy_fut")
+        try:
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(cot.cot_year, year, "legacy_fut")
+                # 15秒超时，防止爬虫挂死
+                df = future.result(timeout=15)
+        except FuturesTimeout:
+            logger.warning("pycot-reports: 获取 %d 年数据超时", year)
+            return records
+        except Exception:
+            logger.warning("pycot-reports: 获取 %d 年数据失败", year)
+            return records
+
         if df is None or df.empty:
             logger.warning("pycot-reports: %d 年数据为空", year)
             return records
@@ -102,6 +126,46 @@ class CFTCFetcher:
                     records.append(rec)
 
         logger.info("pycot: 获取 %d 条 COT 记录", len(records))
+        return records
+
+    def _fetch_via_akshare(self) -> list[dict[str, Any]]:
+        """通过 akshare 获取最近的 CFTC 数据。"""
+        records: list[dict[str, Any]] = []
+        try:
+            import akshare as ak
+            df = ak.macro_usa_cftc_nc_holding()
+            if df is None or df.empty:
+                logger.warning("akshare CFTC 数据为空")
+                return records
+
+            df = df.tail(4).copy()
+            for _, row in df.iterrows():
+                # 注意这里可能用 pd.Series(row) 提取
+                report_date = str(row.get("日期", ""))[:10]
+                if not report_date:
+                    continue
+
+                for metal, prefix in [("gold", "黄金"), ("silver", "白银")]:
+                    ncl = self._api_float(row.to_dict(), f"{prefix}-多头仓位")
+                    ncs = self._api_float(row.to_dict(), f"{prefix}-空头仓位")
+                    if ncl is not None or ncs is not None:
+                        net_pos = (ncl or 0) - (ncs or 0)
+                        records.append({
+                            "report_date": report_date,
+                            "market": "COMEX",
+                            "metal": metal,
+                            "non_commercial_long": ncl,
+                            "non_commercial_short": ncs,
+                            "commercial_long": None,  # akshare NC 接口无商业持仓
+                            "commercial_short": None,
+                            "net_position": net_pos,
+                            "source": "akshare_cftc",
+                        })
+
+            logger.info("akshare: 获取 %d 条 COT 记录", len(records))
+        except Exception:
+            logger.exception("akshare CFTC 抓取失败")
+
         return records
 
     def _fetch_via_api(self, year: int) -> list[dict[str, Any]]:
