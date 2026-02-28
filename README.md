@@ -13,6 +13,9 @@
 | 资金流与持仓 | GLD/SLV (yfinance) / CFTC (pycot-reports) | 日度/周度 |
 | 实物供需 | 预留（年度手动更新） | 年度 |
 
+## 更新日志 (Changelog)
+- [2026-02-28 核心稳定性与反爬升级方案整理梳理](./CHANGELOG_20260228.md) （包含 SGE PDF 解析、CFTC/LBMA 双边降级源、SHFE 弹性回溯、邮件附件防封锁）
+
 ## 快速开始
 
 ### 1. 创建虚拟环境
