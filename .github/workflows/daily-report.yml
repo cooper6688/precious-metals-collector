@@ -23,6 +23,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
@@ -35,7 +37,7 @@ jobs:
           PM_SMTP_FROM: ${{ secrets.PM_SMTP_FROM }}
           PM_SMTP_TO: ${{ secrets.PM_SMTP_TO }}
           PM_ENV: prod
-        run: python collector/run_daily.py
+        run: xvfb-run -a python collector/run_daily.py
 
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5

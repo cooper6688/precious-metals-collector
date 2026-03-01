@@ -267,12 +267,14 @@ class InventoryFetcher:
         """
         从上期所 JSON API 获取仓单数据。
         增加回溯机制，如果当天未发布（如周末或节假日返回 404），则向前尝试最多 7 天。
-        使用 curl_cffi 伪装浏览器 TLS 指纹以绕过反爬虫。
+        使用 Scrapling 伪装浏览器指纹以绕过反爬虫。
+        加入针对特定接口连续 404 的熔断与报警邮件机制。
         """
         records: list[dict[str, Any]] = []
-        fetcher = Fetcher()
             
         target_dt = datetime.strptime(date, "%Y%m%d") if date else datetime.now()
+        
+        continuous_404_count = 0
         
         # 尝试最多 7 天 (涵盖长假)
         for offset in range(7):
@@ -284,24 +286,17 @@ class InventoryFetcher:
             url = f"https://www.shfe.com.cn/data/tradedata/future/dailydata/pm{date_str}.dat"
             logger.info("尝试从 SHFE 抓取仓单数据 (Scrapling): %s", url)
             
-            fetcher = StealthyFetcher(headless=True)
-            resp = fetcher.fetch(url, timeout=15000)
-            
             try:
-                # Original headers are not needed if StealthyFetcher handles them
-                # headers = {
-                #     "User-Agent": _UA,
-                #     "Accept": "application/json, text/javascript, */*; q=0.01",
-                #     "Referer": "https://www.shfe.com.cn/",
-                #     "Connection": "keep-alive"
-                # }
-                
-                # 使用 scrapling StealthyFetcher 自动处理指纹和绕过
-                resp = StealthyFetcher.fetch(url, timeout=15000, headless=True)
+                # 使用 scrapling StealthyFetcher 自动处理指纹和绕过 (关闭 headless 提高隐蔽性，借助 xvfb)
+                resp = StealthyFetcher.fetch(url, timeout=15000, headless=False)
                 
                 if resp.status == 404:
                     logger.debug("SHFE pm%s.dat 报 404 (无数据/非交易日)，尝试回退...", date_str)
+                    continuous_404_count += 1
                     continue
+                else:
+                    # 只要有非 404 返回，打破连续 404 计数
+                    continuous_404_count = 0
                 
                 if resp.status != 200:
                     continue
@@ -342,7 +337,7 @@ class InventoryFetcher:
                             "warehouse": warehouse,
                             "inventory": weight,
                             "unit": unit_val,
-                            "source": "shfe_json_cffi",
+                            "source": "shfe_json_scrapling",
                         })
 
                 if records:
@@ -357,6 +352,18 @@ class InventoryFetcher:
             time.sleep(0.5)
             
         logger.warning("SHFE 回溯 7 天仍未获取到仓单数据")
+        
+        # 触发特级熔断警报邮件
+        if continuous_404_count >= 3:
+            logger.error("SHFE 接口连续 3 天及以上返回 404，可能路径发生偏移，发送报警邮件...")
+            try:
+                from collector.mailer import EmailSender
+                sender = EmailSender()
+                msg = f"<h3>🚨 SHFE 接口访问异常熔断警报 🚨</h3><p>系统连续 {continuous_404_count} 次尝试访问 SHFE 仓单接口 <strong>/data/tradedata/future/dailydata/</strong> 均返回 404。</p><p>请相关运维人员立刻检查并重写接口提取规则！</p>"
+                sender.send_email(msg, datetime.now().strftime("%Y-%m-%d") + " (SHFE 告警)", None)
+            except Exception as e:
+                logger.error("发送 SHFE 熔断报警邮件失败: %s", e)
+                
         return records
 
     # ============================================================
@@ -378,10 +385,116 @@ class InventoryFetcher:
             库存记录列表。
         """
         records: list[dict[str, Any]] = []
-        # TODO: LBMA CDN has strengthened protection against bot downloads (even with StealthyFetcher/curl_cffi).
-        # Temporarily disabling this to prevent pipeline failure until a new bypass or storage mirror is found.
-        logger.warning("LBMA 金库 XLSX 下载暂时关闭（因 CDN 403 封锁）")
-        return []
+        now = datetime.now()
+
+        if year is None or month is None:
+            # LBMA 数据通常有 1 个月延迟，取上个月
+            if now.month == 1:
+                year = now.year - 1
+                month = 12
+            else:
+                year = now.year
+                month = now.month - 1
+
+        month_names = [
+            "", "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December",
+        ]
+        month_name = month_names[month]
+
+        xlsx_url = (
+            f"https://cdn.lbma.org.uk/downloads/"
+            f"LBMA-London-Vault-Holdings-Data-{month_name}-{year}.xlsx"
+        )
+        
+        try:
+            from curl_cffi import requests as cffi_requests
+            
+            # 使用 Scrapling 获取 Cloudflare cookies (headed 模式以提高隐蔽性通过挑战)
+            auth_url = "https://www.lbma.org.uk/prices-and-data/london-vault-data"
+            logger.info("LBMA: 使用 Scrapling 获取 Cloudflare 鉴权信息...")
+            fetcher_resp = StealthyFetcher.fetch(auth_url, headless=False, solve_cloudflare=True, wait=3000)
+            
+            cookies_tuple = getattr(fetcher_resp, "cookies", ())
+            cookies_dict = {c['name']: c['value'] for c in cookies_tuple if isinstance(c, dict) and 'name' in c and 'value' in c}
+            
+            user_agent = _UA
+            if hasattr(fetcher_resp, "request") and hasattr(fetcher_resp.request, "headers"):
+                user_agent = fetcher_resp.request.headers.get("User-Agent", _UA)
+                
+            logger.info("LBMA: 鉴权获取成功，准备下载 XLSX: %s", xlsx_url)
+            
+            headers = {
+                "User-Agent": user_agent,
+                "Referer": "https://www.lbma.org.uk/",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+            }
+            
+            # 使用 curl_cffi 下载二进制文件 (复用 Cookie 和 UA)
+            xlsx_resp = cffi_requests.get(
+                xlsx_url,
+                cookies=cookies_dict,
+                headers=headers,
+                impersonate="chrome",
+                timeout=30
+            )
+            
+            if xlsx_resp.status_code == 404:
+                logger.warning("LBMA %d-%02d 数据不存在（可能尚未发布）", year, month)
+                return records
+                
+            xlsx_resp.raise_for_status()
+
+            df = pd.read_excel(io.BytesIO(xlsx_resp.content), header=None, engine="openpyxl")
+            logger.info("LBMA 原始行数: %d, 列数: %d", len(df), len(df.columns))
+
+            # 解析：从第 3 行（索引 2）开始，找 YYYY-MM 格式的日期列
+            for idx in range(2, len(df)):
+                month_end = str(df.iloc[idx, 0]).strip()
+                if not re.match(r"\d{4}-\d{2}", month_end):
+                    continue
+
+                # Gold = 列 1, Silver = 列 2（千盎司）
+                gold_koz = self._safe_float_val(df.iloc[idx, 1])
+                silver_koz = self._safe_float_val(df.iloc[idx, 2])
+
+                if gold_koz is not None and gold_koz > 0:
+                    gold_ton = (gold_koz * 1000) / OUNCE_TO_TON
+                    records.append({
+                        "date": month_end,
+                        "exchange": "LBMA",
+                        "metal": "gold",
+                        "category": "vault_total",
+                        "warehouse": "London Vaults",
+                        "inventory": round(gold_ton, 2),
+                        "unit": "ton",
+                        "source": "lbma_xlsx",
+                    })
+                if silver_koz is not None and silver_koz > 0:
+                    silver_ton = (silver_koz * 1000) / OUNCE_TO_TON
+                    records.append({
+                        "date": month_end,
+                        "exchange": "LBMA",
+                        "metal": "silver",
+                        "category": "vault_total",
+                        "warehouse": "London Vaults",
+                        "inventory": round(silver_ton, 2),
+                        "unit": "ton",
+                        "source": "lbma_xlsx",
+                    })
+
+            # 只取最新 2 条月份数据（避免写入过多历史）
+            if len(records) > 4:
+                records = records[:4]
+
+            logger.info("LBMA 获取 %d 条金库记录", len(records))
+
+        except ImportError:
+            logger.error("缺少 curl_cffi 库，无法抓取 LBMA")
+        except Exception:
+            logger.exception("LBMA 金库数据抓取或解析失败")
+        return records
 
     # ============================================================
     # SGE —— 上海金交所 PDF
@@ -411,7 +524,7 @@ class InventoryFetcher:
             resp = StealthyFetcher.fetch(
                 api_url, 
                 timeout=15000,
-                headless=True
+                headless=False
             )
             if resp.status != 200:
                 logger.warning("SGE JSON API 返回错误状态码: %s", resp.status)
@@ -453,7 +566,7 @@ class InventoryFetcher:
             pdf_resp = StealthyFetcher.fetch(
                 pdf_url, 
                 timeout=30000,
-                headless=True
+                headless=False
             )
             if pdf_resp.status != 200:
                 logger.error("SGE PDF 下载失败: %s", pdf_resp.status)

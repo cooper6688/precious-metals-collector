@@ -207,18 +207,17 @@ class PriceFetcher:
         
         def _action(page):
             try:
-                page.wait_for_load_state("networkidle", timeout=10000)
-                # 寻找并点击查询按钮
                 search_btn = page.locator("a:has-text('查询'), button:has-text('查询'), .searchBtn")
                 if search_btn.count() > 0:
                     search_btn.first.click()
-                    # 等待表格加载
-                    page.wait_for_selector(".table-responsive table, .memberName table", timeout=15000)
+                    # 显式等待表格内数据单元格出现（移除 networkidle 防止心跳埋点导致永远超时）
+                    page.wait_for_selector("table tr td", state="visible", timeout=15000)
             except Exception as e:
                 logger.debug("SGE Scrapling UI action warning: %s", e)
 
         try:
-            resp = StealthyFetcher.fetch(url, headless=True, page_action=_action, wait=2000)
+            # 移除固定的 wait 参数，完全依赖 _action 内的页面事件驱动；切换为 headed 模式以防检测
+            resp = StealthyFetcher.fetch(url, headless=False, page_action=_action)
             if resp.status != 200:
                 return results
 
@@ -326,8 +325,8 @@ class PriceFetcher:
         url = "https://www.lbma.org.uk/prices-and-data/precious-metal-prices"
         
         try:
-            # 启用 solve_cloudflare
-            resp = StealthyFetcher.fetch(url, headless=True, solve_cloudflare=True, wait=5000)
+            # 启用 solve_cloudflare，采用 headed 模式通过挑战，并移除不必要的 wait 参数 (Stealthy 会自动处理)
+            resp = StealthyFetcher.fetch(url, headless=False, solve_cloudflare=True)
             if resp.status != 200:
                 return records
 
