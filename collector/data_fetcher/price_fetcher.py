@@ -197,40 +197,89 @@ class PriceFetcher:
 
     def fetch_lbma_spot(self, days: int = 5) -> list[dict[str, Any]]:
         """
-        通过 yfinance 获取伦敦现货黄金/白银 (XAUUSD=X, XAGUSD=X)。
+        通过 yfinance (或直接请求 Yahoo API) 获取伦敦现货黄金/白银 (XAUUSD=X, XAGUSD=X)。
         """
         records: list[dict[str, Any]] = []
         if os.getenv("PM_SKIP_YFINANCE", "0") == "1":
             return records
 
         tickers = {"gold": "XAUUSD=X", "silver": "XAGUSD=X"}
-        try:
-            import yfinance as yf
-            for metal, symbol in tickers.items():
-                def _fetch():
-                    ticker = yf.Ticker(symbol)
-                    return ticker.history(period=f"{days}d")
+        import requests
+        from datetime import datetime
+        
+        # 尝试使用 requests 直接调用 Yahoo chart API 以规避 yfinance 库的频繁封禁
+        for metal, symbol in tickers.items():
+            url = f"https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?range={days}d&interval=1d"
+            headers = {"User-Agent": "Mozilla/5.0"}
+            
+            # 使用项目配置的代理
+            from collector.settings import PROXIES, USE_PROXY
+            proxies = PROXIES if USE_PROXY else None
+            
+            try:
+                resp = requests.get(url, headers=headers, proxies=proxies, timeout=15)
+                resp.raise_for_status()
+                data = resp.json()
+                
+                result = data.get("chart", {}).get("result", [])
+                if not result: continue
+                
+                auth_data = result[0]
+                timestamps = auth_data.get("timestamp", [])
+                close_prices = auth_data.get("indicators", {}).get("quote", [{}])[0].get("close", [])
+                
+                if timestamps and close_prices:
+                    for t, p in zip(timestamps, close_prices):
+                        if p is not None:
+                            dt_str = datetime.fromtimestamp(t).strftime("%Y-%m-%d")
+                            records.append({
+                                "date": dt_str,
+                                "market": "LBMA",
+                                "metal": metal,
+                                "price": float(p),
+                                "currency": "USD",
+                                "source": "yahoo_api",
+                            })
+                            
+            except Exception as e:
+                logger.warning("LBMA (Yahoo API) %s 现货抓取失败: %s", metal, e)
 
-                from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
-                with ThreadPoolExecutor(max_workers=1) as executor:
-                    future = executor.submit(_fetch)
-                    df = future.result(timeout=15)
+        if records:
+            logger.info("LBMA 抓取成功，本次使用数据源: [主源] Yahoo JSON Chart API")
 
-                if df is not None and not df.empty:
-                    df = df.reset_index()
-                    date_col = df.columns[0]
-                    for _, row in df.iterrows():
-                        records.append({
-                            "date": pd.to_datetime(row[date_col]).strftime("%Y-%m-%d"),
-                            "market": "LBMA",
-                            "metal": metal,
-                            "price": float(row["Close"]),
-                            "currency": "USD",
-                            "source": "yfinance_spot",
-                        })
-            logger.info("LBMA 获取 %d 条现货记录", len(records))
-        except Exception:
-            logger.exception("LBMA 现货抓取失败")
+        # 如果 requests 也失败，则回退到 yfinance 库
+        if not records:
+            try:
+                import yfinance as yf
+                for metal, symbol in tickers.items():
+                    def _fetch():
+                        ticker = yf.Ticker(symbol)
+                        return ticker.history(period=f"{days}d")
+
+                    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+                    with ThreadPoolExecutor(max_workers=1) as executor:
+                        future = executor.submit(_fetch)
+                        df = future.result(timeout=15)
+
+                    if df is not None and not df.empty:
+                        df = df.reset_index()
+                        date_col = df.columns[0]
+                        for _, row in df.iterrows():
+                            records.append({
+                                "date": pd.to_datetime(row[date_col]).strftime("%Y-%m-%d"),
+                                "market": "LBMA",
+                                "metal": metal,
+                                "price": float(row["Close"]),
+                                "currency": "USD",
+                                "source": "yfinance_spot",
+                            })
+            except Exception:
+                logger.exception("LBMA 现货 yfinance 兜底抓取失败")
+                
+            if records:
+                logger.info("LBMA 抓取成功，本次使用数据源: [备用源] yfinance")
+
+        logger.info("LBMA 获取 %d 条现货记录", len(records))
         return records
 
     def fetch_spot_prices(self, full_history: bool = False) -> list[dict[str, Any]]:

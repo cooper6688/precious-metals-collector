@@ -10,7 +10,8 @@ import io
 import logging
 import re
 import time
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from typing import Any
 
 import pandas as pd
@@ -264,6 +265,7 @@ class InventoryFetcher:
     def fetch_shfe(self, date: str | None = None) -> list[dict[str, Any]]:
         """
         从上期所 JSON API 获取仓单数据。
+        增加回溯机制，如果当天未发布（如周末或节假日返回 404），则向前尝试最多 5 天。
 
         Args:
             date: 日期 YYYYMMDD，默认今天。
@@ -272,74 +274,79 @@ class InventoryFetcher:
             仓单记录列表。
         """
         records: list[dict[str, Any]] = []
-        if date is None:
-            date = datetime.now().strftime("%Y%m%d")
+        
+        target_dt = datetime.strptime(date, "%Y%m%d") if date else datetime.now()
+        
+        # 尝试最多 5 天
+        for offset in range(5):
+            curr_dt = target_dt - timedelta(days=offset)
+            date_str = curr_dt.strftime("%Y%m%d")
+            date_fmt = curr_dt.strftime("%Y-%m-%d")
+            url = f"https://www.shfe.com.cn/data/dailydata/kx/pm{date_str}.dat"
 
-        date_fmt = f"{date[:4]}-{date[4:6]}-{date[6:8]}"
-        url = f"https://www.shfe.com.cn/data/dailydata/kx/pm{date}.dat"
+            try:
+                # SHFE 在国内可直接访问，不需要代理
+                resp = requests.get(url, headers={"User-Agent": _UA}, timeout=30,
+                                proxies={"http": None, "https": None})
+                resp.raise_for_status()
+                data = resp.json()
 
-        try:
-            # SHFE 在国内可直接访问，不需要代理
-            resp = requests.get(url, headers={"User-Agent": _UA}, timeout=30,
-                            proxies={"http": None, "https": None})
-            resp.raise_for_status()
-            data = resp.json()
+                # 遍历 o_cursor
+                for item in data.get("o_cursor", []):
+                    var_name = str(item.get("VARNAME", "")).strip().upper()
 
-            # 遍历 o_cursor
-            for item in data.get("o_cursor", []):
-                var_name = str(item.get("VARNAME", "")).strip().upper()
+                    # 只关心黄金(AU)和白银(AG)
+                    metal_val = None
+                    if "AU" in var_name:
+                        metal_val = "gold"
+                    elif "AG" in var_name:
+                        metal_val = "silver"
+                    else:
+                        continue
 
-                # 只关心黄金(AU)和白银(AG)
-                metal_val = None
-                if "AU" in var_name:
-                    metal_val = "gold"
-                elif "AG" in var_name:
-                    metal_val = "silver"
+                    # 仓库名
+                    warehouse = str(item.get("REGNAME", "")).strip()
+                    if not warehouse or warehouse == "nan":
+                        warehouse = str(item.get("WHABBRNAME", "")).strip()
+
+                    # 重量与单位
+                    weight_str = str(item.get("WRTWGHTS", "0")).strip()
+                    try:
+                        weight = float(weight_str.replace(",", ""))
+                    except (ValueError, TypeError):
+                        weight = 0.0
+
+                    unit_val = str(item.get("WGHTUNIT", "千克")).strip()
+
+                    if weight > 0:
+                        records.append({
+                            "date": date_fmt,
+                            "exchange": "SHFE",
+                            "metal": metal_val,
+                            "category": "warehouse",
+                            "warehouse": warehouse,
+                            "inventory": weight,
+                            "unit": unit_val,
+                            "source": "shfe_json",
+                        })
+
+                if records:
+                    logger.info("SHFE 获取 %d 条仓单记录 (回溯 %d 天，日期: %s)", len(records), offset, date_fmt)
+                    return records
                 else:
-                    continue
+                    logger.warning("SHFE %s 数据解析为空，可能非主力交割，继续尝试...", date_fmt)
 
-                # 仓库名
-                warehouse = str(item.get("REGNAME", "")).strip()
-                if not warehouse or warehouse == "nan":
-                    warehouse = str(item.get("WHABBRNAME", "")).strip()
-
-                # 重量与单位
-                weight_str = str(item.get("WRTWGHTS", "0")).strip()
-                try:
-                    weight = float(weight_str.replace(",", ""))
-                except (ValueError, TypeError):
-                    weight = 0.0
-
-                unit_val = str(item.get("WGHTUNIT", "千克")).strip()
-
-                # 变化量
-                change_str = str(item.get("WRTCHANGE", "0")).strip()
-                try:
-                    change = float(change_str.replace(",", ""))
-                except (ValueError, TypeError):
-                    change = 0.0
-
-                if weight > 0:
-                    records.append({
-                        "date": date_fmt,
-                        "exchange": "SHFE",
-                        "metal": metal_val,
-                        "category": "warehouse",
-                        "warehouse": warehouse,
-                        "inventory": weight,
-                        "unit": unit_val,
-                        "source": "shfe_json",
-                    })
-
-            logger.info("SHFE 获取 %d 条仓单记录 (日期: %s)", len(records), date_fmt)
-
-        except requests.exceptions.HTTPError as e:
-            if e.response is not None and e.response.status_code == 404:
-                logger.warning("SHFE 仓单数据不存在 (日期: %s, 可能非交易日)", date_fmt)
-            else:
-                logger.exception("SHFE 仓单抓取失败")
-        except Exception:
-            logger.exception("SHFE 仓单抓取失败")
+            except requests.exceptions.HTTPError as e:
+                if e.response is not None and e.response.status_code == 404:
+                    logger.debug("SHFE 仓单数据不存在 (日期: %s, 尝试上一交易日)", date_fmt)
+                else:
+                    logger.exception("SHFE %s 仓单抓取失败", date_fmt)
+            except Exception:
+                logger.exception("SHFE %s 仓单抓取失败", date_fmt)
+                
+            time.sleep(1) # 避免请求过快
+            
+        logger.warning("SHFE 回溯 5 天仍未获取到仓单数据")
         return records
 
     # ============================================================
@@ -440,6 +447,155 @@ class InventoryFetcher:
             logger.exception("LBMA 金库数据抓取失败")
         return records
 
+    # ============================================================
+    # SGE —— 上海金交所 PDF
+    # ============================================================
+
+    def fetch_sge_pdf(self, date: str | None = None) -> list[dict[str, Any]]:
+        """
+        抓取上海黄金交易所官方每日/每周交割 PDF，提取库存。
+        """
+        records: list[dict[str, Any]] = []
+        try:
+            import pdfplumber
+            from bs4 import BeautifulSoup
+        except ImportError:
+            logger.error("缺少 pdfplumber 或 bs4，无法解析 SGE PDF")
+            return records
+            
+        target_dt = datetime.strptime(date, "%Y%m%d") if date else datetime.now()
+
+        for offset in range(5):
+            curr_dt = target_dt - timedelta(days=offset)
+            date_str = curr_dt.strftime("%Y-%m-%d")
+            
+            try:
+                url = "https://www.sge.com.cn/sjzx/mrhq"
+                resp = self.session.get(url, timeout=15)
+                resp.raise_for_status()
+                soup = BeautifulSoup(resp.text, 'html.parser')
+
+                pdf_url = None
+                for a in soup.find_all('a'):
+                    text = a.get_text(strip=True)
+                    if "交割" in text and ("PDF" in text.upper() or str(a.get("href", "")).lower().endswith(".pdf")):
+                        href = a.get("href", "")
+                        if not href.startswith("http"):
+                            href = "https://www.sge.com.cn" + href
+                        pdf_url = href
+                        break
+                    elif "交割" in text and "article" in str(a.get("href", "")):
+                        href = a.get("href", "")
+                        if not href.startswith("http"):
+                            href = "https://www.sge.com.cn" + href
+                        
+                        resp2 = self.session.get(href, timeout=15)
+                        soup2 = BeautifulSoup(resp2.text, 'html.parser')
+                        for a2 in soup2.find_all('a'):
+                            h2 = a2.get("href", "")
+                            if h2.lower().endswith(".pdf"):
+                                if not h2.startswith("http"):
+                                    h2 = "https://www.sge.com.cn" + h2
+                                pdf_url = h2
+                                break
+                        if pdf_url:
+                            break
+
+                if not pdf_url:
+                    logger.debug("SGE 官网未找到交割 PDF (尝试前一日: %s)", date_str)
+                    continue
+
+                logger.info("SGE 下载 PDF: %s", pdf_url)
+                pdf_resp = self.session.get(pdf_url, timeout=20)
+                pdf_resp.raise_for_status()
+
+                gold_vol = 0.0
+                silver_vol = 0.0
+
+                with pdfplumber.open(io.BytesIO(pdf_resp.content)) as pdf:
+                    for page in pdf.pages:
+                        tables = page.extract_tables()
+                        for table in tables:
+                            # 动态表头寻找
+                            delivery_col_idx = -1
+                            for row_idx, row in enumerate(table):
+                                if not row: continue
+                                row_str_list = [str(x).replace('\n', '') for x in row if x]
+                                row_text = "".join(row_str_list).upper()
+                                
+                                # 探测表头中的“交收”或“交割”字眼
+                                if "交收" in row_text or "交割" in row_text:
+                                    for col_idx, cell_text in enumerate(row):
+                                        if cell_text and re.search(r"(交收|交割)", str(cell_text)):
+                                            delivery_col_idx = col_idx
+                                            break
+                                            
+                                # 如果找到了表头，或者本身已经是数据行
+                                if "AU" in row_text or "金" in row_text or "AG" in row_text or "银" in row_text:
+                                    # 如果没有找到明确的表头列，尝试用启发式的正则 (通常交割量在倒数第1/2列)
+                                    target_val = 0.0
+                                    
+                                    if delivery_col_idx != -1 and delivery_col_idx < len(row):
+                                        # 按精确列索引取
+                                        cell_str = str(row[delivery_col_idx]).replace(",", "").strip()
+                                        num_match = re.search(r"[\d\.]+", cell_str)
+                                        if num_match:
+                                            target_val = float(num_match.group(0))
+                                    else:
+                                        # 回退到提取所有数字
+                                        nums = []
+                                        for cell in row:
+                                            if cell:
+                                                num_match = re.search(r"[\d\.]+", str(cell).replace(",", ""))
+                                                if num_match:
+                                                    try:
+                                                        nums.append(float(num_match.group(0)))
+                                                    except ValueError:
+                                                        pass
+                                        if nums:
+                                            # 保守提取：如果提取不到表头，暂估在最后一两个数字里
+                                            target_val = nums[0] if len(nums) == 1 else nums[1] if len(nums) > 1 else nums[-1]
+
+                                    if target_val > 0:
+                                        if "AU" in row_text or "金" in row_text:
+                                            gold_vol += target_val
+                                        elif "AG" in row_text or "银" in row_text:
+                                            silver_vol += target_val
+
+                if gold_vol > 0:
+                    records.append({
+                        "date": date_str,
+                        "exchange": "SGE",
+                        "metal": "gold",
+                        "category": "delivery_volume",
+                        "warehouse": "SGE Main",
+                        "inventory": round(gold_vol / 1000, 4),
+                        "unit": "ton",
+                        "source": "sge_pdf",
+                    })
+                if silver_vol > 0:
+                    records.append({
+                        "date": date_str,
+                        "exchange": "SGE",
+                        "metal": "silver",
+                        "category": "delivery_volume",
+                        "warehouse": "SGE Main",
+                        "inventory": round(silver_vol / 1000, 4),
+                        "unit": "ton",
+                        "source": "sge_pdf",
+                    })
+
+                if records:
+                    logger.info("SGE 获取 %d 条 PDF 解析记录 (日期: %s)", len(records), date_str)
+                    return records
+
+            except Exception as e:
+                logger.warning("SGE PDF 获取/解析异常: %s", e)
+                
+            time.sleep(2)
+            
+        return records
+
     @staticmethod
     def _safe_float_val(val: Any) -> float | None:
         """安全转换浮点数。"""
@@ -478,6 +634,10 @@ class InventoryFetcher:
         # 3. LBMA 月度（每天都尝试，靠数据库 INSERT OR REPLACE 去重）
         lbma = self.fetch_lbma()
         all_records.extend(lbma)
+
+        # 4. SGE PDF 解析
+        sge = self.fetch_sge_pdf()
+        all_records.extend(sge)
 
         if all_records:
             return self.db.insert_batch("inventory_daily", all_records)

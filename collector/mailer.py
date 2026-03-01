@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -54,13 +55,21 @@ class EmailSender:
                     continue
                 
                 try:
+                    # 如果是 .db 文件，将其压缩为 .zip 后再发送，以绕过邮件网关拦截
+                    if file_path.suffix.lower() == ".db":
+                        zip_path = file_path.with_suffix(".zip")
+                        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                            zf.write(file_path, arcname=file_path.name)
+                        file_path = zip_path
+                        logger.debug("数据库文件已压缩为 %s", file_path.name)
+
                     part = MIMEBase("application", "octet-stream")
                     with open(file_path, "rb") as f:
                         part.set_payload(f.read())
                     encoders.encode_base64(part)
                     part.add_header(
                         "Content-Disposition",
-                        f"attachment; filename={os.path.basename(file_path)}",
+                        f"attachment; filename={file_path.name}",
                     )
                     msg.attach(part)
                     logger.debug("已添加附件: %s", file_path)
