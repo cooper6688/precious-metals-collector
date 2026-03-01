@@ -76,3 +76,19 @@ Modified `fetch_lbma_spot` in `price_fetcher.py`.
 - SGE PDF Inventory: **PASSED** (Validated via `StealthyFetcher`).
 - SHFE Inventory URL: **FIXED** (Path discovery completed).
 - LBMA Cloudflare Bypass: **PASSED** (Engine successfully rendered the protected page).
+
+## 🚀 [2026-03-01] 补充高级稳定性监控升级
+
+### 1. LBMA 金库 XLSX 穿透下载路线切换
+- **问题**: LBMA 二进制文件下载受阻，其所在的 CDN 和 AWS S3 服务器对爬虫流量进行了严苛封锁。
+- **修复**: 组合使用 `Scrapling StealthyFetcher` 提取云端会话 Cookies 与 User-Agent，结合 `curl_cffi` 强力模拟 Chrome 浏览器指纹直接拉取二进制文件，完全越过防线。
+
+### 2. SGE 动态页面网络防流氓轮询机制
+- **问题**: `StealthyFetcher` 在抓取国内 SGE 页面时偶尔陷入网络超时，因国内站点存在长期挂起的心跳埋点，致使 `networkidle` 无限期阻塞。
+- **修复**: 全面剥离 `networkidle` 强制等待，转移为基于 `wait_for_selector` 的轻量级 DOM 渲染事件感知。
+
+### 3. GitHub Actions 环境隐蔽性增强 (Xvfb)
+- **修复**: 彻底弃用 `headless=True`，转为在 Ubuntu 流水线底层安装配置 `Xvfb` (虚拟帧缓冲)，使 Python 程序能够在完全伪真切的显示器沙盒中以 `headless=False` 模式执行，隐蔽度拉满。
+
+### 4. SHFE 高优路径嗅探熔断器
+- **修复**: 识别最近上期所仓单接口路由由 `/data/tradedata/future/dailydata/` 取代旧版。引入长达 `3天` 容差期的 404 检测计数器；并为未来的路径调整铺设了直升管理员邮箱的紧急报警探针。
