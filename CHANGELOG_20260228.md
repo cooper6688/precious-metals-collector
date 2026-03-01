@@ -7,10 +7,10 @@
 
 **Root Causes:**
 1. Email providers explicitly blocking incoming `.db` files.
-2. SHFE API throwing 404s on non-trading days/weekends.
-3. SGE Inventory data not being scraped (only API spot prices existed). SGE only provides PDF delivery documents.
+2. SHFE API throwing 404s on non-trading days/weekends, and the specific daily JSON endpoint `pmYYYYMMDD.dat` occasionally returning 404 regardless of Headers or TLS impersonation.
+3. SGE Inventory data not being scraped (only API spot prices existed). SGE only provides PDF delivery documents, but the `mrhq` HTML page is dynamically rendered by Vue/React, causing pure `BeautifulSoup` to return empty sets even after WAF bypass.
 4. `pycot-reports` library freezing and hanging the GitHub Actions runner.
-5. `yfinance` rate limits (HTTP 429) dropping LBMA spot data.
+5. `yfinance` rate limits (HTTP 429) dropping LBMA spot data. Moreover, `USE_PROXY=True` defaults triggered `Connection refused` on GitHub Actions since no local proxy exists on the Ubuntu runner. Furthermore, Yahoo heavily blocks Azure/GitHub Actions IPs with 404s/429s even when attempting to bypass with `curl_cffi` without a proxy.
 
 ## 🛠️ Solutions Implemented
 
