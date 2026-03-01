@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 from typing import Any
 
+import pandas as pd
 from collector.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,12 @@ class FXFetcher:
                 return records
 
             # 取卖报价(ask)作为汇率
-            rate = float(usd_rows.iloc[0]["卖报价"])
+            ask_val = usd_rows.iloc[0]["卖报价"]
+            if pd.isna(ask_val) or not ask_val:
+                logger.warning("akshare USD/CNY 卖报价为空")
+                return records
+                
+            rate = float(ask_val)
             today = datetime.now().strftime("%Y-%m-%d")
 
             records.append({

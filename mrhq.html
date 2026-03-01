@@ -1,0 +1,1195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>行情走势-上海黄金交易所</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<link rel="shortcut icon" href="ico" type="image/x-icon" />
+<meta name="description" content="行情走势-上海黄金交易所">
+<meta name="keyword" content="行情走势-上海黄金交易所">
+<meta name="viewport" content="width=device-width">
+<!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/> --><link rel="stylesheet" type="text/css" href="/static/css/init.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/global.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery.mCustomScrollbar.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/datePicker.css"/>
+<!--[if IE]><link rel="stylesheet" type="text/css" href="/static/css/ie.css"/><![endif]-->
+<link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-datetimepicker.min.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css" />
+<script type="text/javascript" src="/static/js/echarts.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="/static/js/jbase64.js"></script>
+<script type="text/javascript" src="/static/js/tools.js"></script>
+<script type="text/javascript" src="/static/js/main.js"></script>
+<script type="text/javascript" src="/static/js/pdfobject.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+<script type="text/javascript" src="/static/js/md5.js"></script>
+<script type="text/javascript" src="/static/js/func.js"></script>
+<script type="text/javascript" src="/static/js/highstock.js"></script>
+<script type="text/javascript" src="/static/js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-datetimepicker.min.js" charset="UTF-8"></script>
+<script type="text/javascript" src="/static/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+<style type="text/css">
+.articleList  li span br,
+.contList a b br {
+display: none;
+}
+</style>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?9165e30c92968eb1baa5e3eb5f34dc60";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<!-- 红色样式 -->
+<!--
+<style type="text/css">
+.leftColumnNav .btnList .current .item {
+    background: #b2d9f0;
+    background-image: url(/upload/image/202201/01/newsCenterLeftSidBg2_2.png);
+    background-repeat: no-repeat;
+    background-position: 209px 0;
+}
+.leftColumnNav .btnList .item:hover {
+    background: #b2d9f0;
+    background-image: url(/upload/image/202201/01/newsCenterLeftSidBg2_2.png);
+    background-repeat: no-repeat;
+    background-position: 209px 0;
+}
+</style>
+
+<style type="text/css">
+    /* #0080cc */
+    .nav,
+    .bannerBtnList li,
+    .tipsBar,
+    .leftColumnNav .title{
+        background: #EE1C25!important;
+    }
+
+.quikeBtns li h2,
+.jzk_title,
+    .leftColumnNav .btnList .item a:hover,
+    .leftColumnNav .btnList li .subNav .current,
+    .leftColumnNav .btnList .current .item a,
+    .leftColumnNav .btnList li .subNav a:hover{
+        color: #EE1C25!important;
+    }
+    .searchBtn,
+    .headerCenter .search .englishBtn {
+        background-color: #EE1C25!important;
+    }
+
+    /* #198cd1 */
+    .navList li {
+        border-right: 1px solid #c8102e!important;;
+    }
+    /* #008bdd */
+    .searchBtn:hover,
+    .headerCenter .search .englishBtn:hover {
+        background-color: #f54b52!important;
+    }
+    .subnav .content1 a {
+        color: #f54b52!important;
+    }
+    /* #9ed4ff */
+    .color_9ed4ff,
+    .jzk_title span{
+        color: #f98f93!important;;
+    }
+    .leftColumnNav .btnList>ul>li>.item:hover,
+    .leftColumnNav .btnList>ul>li.current>.item{
+        background-color: #feafb3!important;
+    }
+    .leftColumnNav .btnList .subNav .item,
+    .leftColumnNav .subNav,
+    .leftColumnNav .btnList li .subNav a {
+        border-bottom-color: #f7cdcf!important;;
+    }
+    /* #f4fbff */
+    .leftColumnNav .subNav {
+        background: #f7cdcf!important;
+    }
+
+</style>
+-->
+<script>
+	$(document).ready(function (){
+		
+		 $(".nav li:nth-child(5)").addClass('current').siblings().removeClass('current');
+		 
+	  
+	});
+</script>
+</head>
+<body>
+
+<!-- 修改背景颜色 --> <link rel="stylesheet" type="text/css" href="/static/css/add.css"/>
+<!-- 全网黑白-->
+<!--
+<style>
+html {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+  -o-filter: grayscale(100%);
+  filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+  _filter:none;
+}
+</style>
+<style>
+
+     html {
+         filter: grayscale(100%);
+         -webkit-filter: grayscale(100%);
+         -moz-filter: grayscale(100%);
+         -ms-filter: grayscale(100%);
+         -o-filter: grayscale(100%);
+         filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+         -webkit-filter: grayscale(1);
+         filter: gray
+     }
+
+     img,* {
+         filter: gray; /* just for IE6-9 */
+}
+.navList .current ,.moreBtn {
+  background:#b1b1b1; 
+border: none;
+}
+
+.colorRed{
+color: #3d3d3d;
+}
+.colorGreen {
+  color:#a4a4a4;
+}
+
+     /* #0080cc */
+     .jzk_swhj_contListBtn,
+     .ylbzj .bzjlist .xqbtn a,
+     .titleBar .current,
+     .hqzsTitle table,
+     #instidsle option:valid,
+     .datetimepicker table tr td span.active:active, .datetimepicker table tr td span.active:hover:active, .datetimepicker table tr td span.active.disabled:active, .datetimepicker table tr td span.active.disabled:hover:active, .datetimepicker table tr td span.active.active, .datetimepicker table tr td span.active:hover.active, .datetimepicker table tr td span.active.disabled.active, .datetimepicker table tr td span.active.disabled:hover.active,
+     .jzk_jyy_searchBar,
+     .tcc .title,
+     .nav,
+     .bannerBtnList li,
+     .tipsBar,
+     .leftColumnNav .title {
+         background: #494949!important;
+     }
+     .dajishiCont .left .current .txt span, .dajishiCont .right .current .txt span, .dajishiCont .left .current .time, .dajishiCont .right .current .time,
+     .downloadBtn_blue,
+     .articleList li:hover .downloadBtn_blue i,
+     .colorBlue,
+     .jzk_jysNews_title h2,
+     .zj_content .title h2,
+     .articleList>ul>li.bgColor_tr>a>i,
+     .doc,
+
+     .quikeBtns li h2,
+     .columnTitle h2,
+     .newsCenterTitle .titleList .current,
+     .marketTrend .title h2,
+     .subpageTitle h2,
+     .login .title h2,
+     .tzz_kcfl .controlBtn:hover,
+
+     .leftColumnNav .btnList .item a:hover,
+     .leftColumnNav .btnList li .subNav .current,
+     .leftColumnNav .btnList .current .item a,
+     .leftColumnNav .btnList li .subNav a:hover{
+         color: #494949!important;
+     }
+     .jzk_jysNews_title h2,
+     .login .title h2,
+
+     .newsCenterTitle .titleList .current,
+     .dataStatistics .columnTitle .active,
+     .columnTitle h2,
+     .subpageTitle h2  {
+         border-bottom-color: #494949!important;;
+     }
+     .searchBtn,
+     .headerCenter .search .englishBtn {
+         background-color: #494949!important;
+     }
+     .jzk_title {
+         color: #494949!important;
+     }
+
+     /* #198cd1 */
+     .navList li {
+         border-right: 1px solid #494949!important;;
+     }
+     /* #008bdd */
+     .searchBtn:hover,
+     .headerCenter .search .englishBtn:hover {
+         background-color: #494949!important;
+     }
+     .subnav .content1 a {
+         color: #494949!important;
+     }
+     /* #9ed4ff */
+     .color_9ed4ff,
+     .jzk_title span{
+         color: #494949!important;;
+     }
+     .downloadBtn_blue,
+     .jzk_swhj_jyCont>table th,
+     .memberName table .title,
+     .topDiv table .title,
+     tr.sec,
+     .junzhiDiv .title,
+     .memberTable th,
+     .ss-table tr:nth-of-type(1),
+
+     .leftColumnNav .btnList>ul>li>.item:hover,
+     .leftColumnNav .btnList>ul>li.current>.item{
+         background-color: #feafb3!important;
+     }
+     .downloadBtn_blue,
+     .tzz_kcfl .controlBtn:hover{
+         border-color: #feafb3!important;
+     }
+     .leftColumnNav .btnList .subNav .item,
+     .leftColumnNav .subNav,
+     .leftColumnNav .btnList li .subNav a {
+         border-bottom-color: #494949!important;;
+     }
+     /* #f4fbff */
+     .bgColor_tr,
+     select.memberSel,
+     table#rentPriceOneDayTable tbody tr:nth-of-type(odd),
+     table#reportTable tbody tr:nth-of-type(odd),
+     table#junzhiTable tbody tr:nth-of-type(odd),
+     .tzz_kcfl .controlBtn:hover,
+
+     .leftColumnNav .subNav {
+         background: #494949!important;
+     }
+ </style>
+ <script type="text/javascript">
+     var grayscale=function(){var e={colorProps:["color","backgroundColor","borderBottomColor","borderTopColor","borderLeftColor","borderRightColor","backgroundImage"],externalImageHandler:{init:function(e,t){if(e.nodeName.toLowerCase()==="img"){}else{r(e).backgroundImageSRC=t;e.style.backgroundImage=""}},reset:function(e){if(e.nodeName.toLowerCase()==="img"){}else{e.style.backgroundImage="url("+(r(e).backgroundImageSRC||"")+")"}}}},t=function(){try{window.console.log.apply(console,arguments)}catch(e){}},n=function(e){return(new RegExp("https?://(?!"+window.location.hostname+")")).test(e)},r=function(){var e=[0],t="data"+ +(new Date);return function(n){var r=n[t],i=e.length;if(!r){r=n[t]=i;e[r]={}}return e[r]}}(),i=function(e,t,n){var s=document.createElement("canvas"),u=s.getContext("2d"),a=e.naturalHeight||e.offsetHeight||e.height,f=e.naturalWidth||e.offsetWidth||e.width,l;s.height=a;s.width=f;u.drawImage(e,0,0);try{l=u.getImageData(0,0,f,a)}catch(c){}if(t){i.preparing=true;var h=0;(function(){if(!i.preparing){return}if(h===a){u.putImageData(l,0,0,0,0,f,a);n?r(n).BGdataURL=s.toDataURL():r(e).dataURL=s.toDataURL()}for(var t=0;t<f;t++){var c=(h*f+t)*4;l.data[c]=l.data[c+1]=l.data[c+2]=o(l.data[c],l.data[c+1],l.data[c+2])}h++;setTimeout(arguments.callee,0)})();return}else{i.preparing=false}for(var h=0;h<a;h++){for(var p=0;p<f;p++){var d=(h*f+p)*4;l.data[d]=l.data[d+1]=l.data[d+2]=o(l.data[d],l.data[d+1],l.data[d+2])}}u.putImageData(l,0,0,0,0,f,a);return s},s=function(e,t){var n=document.defaultView&&document.defaultView.getComputedStyle?document.defaultView.getComputedStyle(e,null)[t]:e.currentStyle[t];if(n&&/^#[A-F0-9]/i.test(n)){var r=n.match(/[A-F0-9]{2}/ig);n="("+parseInt(r[0],16)+","+parseInt(r[1],16)+","+parseInt(r[2],16)+")"}return n},o=function(e,t,n){return parseInt(.2125*e+.7154*t+.0721*n,10)},u=function(e){var t=Array.prototype.slice.call(e.getElementsByTagName("*"));t.unshift(e);return t};var a=function(t){if(t&&t[0]&&t.length&&t[0].nodeName){var f=Array.prototype.slice.call(t),l=-1,c=f.length;while(++l<c){a.call(this,f[l])}return}t=t||document.documentElement;if(!document.createElement("canvas").getContext){t.style.filter="progid:DXImageTransform.Microsoft.BasicImage(grayscale=1)";t.style.zoom=1;return}var h=u(t),p=-1,d=h.length;while(++p<d){var v=h[p];if(v.nodeName.toLowerCase()==="img"){var m=v.getAttribute("src");if(!m){continue}if(n(m)){e.externalImageHandler.init(v,m)}else{r(v).realSRC=m;try{v.src=r(v).dataURL||i(v).toDataURL()}catch(g){e.externalImageHandler.init(v,m)}}}else{for(var y=0,b=e.colorProps.length;y<b;y++){var w=e.colorProps[y],E=s(v,w);if(!E){continue}if(v.style[w]){r(v)[w]=E}if(E.substring(0,4)==="("){var S=o.apply(null,E.match(/\d+/g));v.style[w]=E="("+S+","+S+","+S+")";continue}if(E.indexOf("url(")>-1){var x=/\(['"]?(.+?)['"]?\)/,T=E.match(x)[1];if(n(T)){e.externalImageHandler.init(v,T);r(v).externalBG=true;continue}try{var N=r(v).BGdataURL||function(){var e=document.createElement("img");e.src=T;return i(e).toDataURL()}();v.style[w]=E.replace(x,function(e,t){return"("+N+")"})}catch(g){e.externalImageHandler.init(v,T)}}}}}};a.reset=function(t){if(t&&t[0]&&t.length&&t[0].nodeName){var i=Array.prototype.slice.call(t),s=-1,o=i.length;while(++s<o){a.reset.call(this,i[s])}return}t=t||document.documentElement;if(!document.createElement("canvas").getContext){t.style.filter="progid:DXImageTransform.Microsoft.BasicImage(grayscale=0)";return}var f=u(t),l=-1,c=f.length;while(++l<c){var h=f[l];if(h.nodeName.toLowerCase()==="img"){var p=h.getAttribute("src");if(n(p)){e.externalImageHandler.reset(h,p)}h.src=r(h).realSRC||p}else{for(var d=0,v=e.colorProps.length;d<v;d++){if(r(h).externalBG){e.externalImageHandler.reset(h)}var m=e.colorProps[d];h.style[m]=r(h)[m]||""}}}};a.prepare=function(e){if(e&&e[0]&&e.length&&e[0].nodeName){var t=Array.prototype.slice.call(e),o=-1,f=t.length;while(++o<f){a.prepare.call(null,t[o])}return}e=e||document.documentElement;if(!document.createElement("canvas").getContext){return}var l=u(e),c=-1,h=l.length;while(++c<h){var p=l[c];if(r(p).skip){return}if(p.nodeName.toLowerCase()==="img"){if(p.getAttribute("src")&&!n(p.src)){i(p,true)}}else{var d=s(p,"backgroundImage");if(d.indexOf("url(")>-1){var v=/\(['"]?(.+?)['"]?\)/,m=d.match(v)[1];if(!n(m)){var g=document.createElement("img");g.src=m;i(g,true,p)}}}}};return a}()
+
+   
+         var navStr = navigator.userAgent.toLowerCase();
+         if(navStr.indexOf("msie 10.0")!==-1||navStr.indexOf("rv:11.0")!==-1){ // 判断是IE10或者IE11
+             window.onload=function(){
+                 grayscale(document.getElementsByClassName('warp'));
+                 grayscale(document.getElementsByClassName('warp2'));
+                 grayscale(document.getElementsByClassName('header'));
+                 grayscale(document.getElementsByClassName('footer'));
+                 grayscale(document.getElementsByClassName('bannerImgList'));
+             }
+         }
+
+ </script>
+-->
+<script type="text/javascript">
+    $(function () {
+        $('[href]').each(function () {
+            $(this).attr('href', $(this).attr('href').replace(/:\/\//g, ':////').replace(/\/\//g, '/'))
+        })
+        $('[onclick]').each(function () {
+            $(this).attr('onclick', $(this).attr('onclick').replace(/:\/\//g, ':////').replace(/\/\//g, '/'))
+        })
+        var focusname = $("#search").val();
+        $("#search").autocomplete({
+            source: function (request, response) {
+                // var focusname1 = encodeURI(encodeURI(request.term));
+                // $.ajax({
+                //     url: '/protal/article/articleSearch',
+                //     dataType: "json",
+                //     data: {"inputStr": focusname1},
+                //     success: function (data) {
+                //         response($.map(data.data, function (item) {
+                //             return {
+                //                 lable: item.title,
+                //                 value: item.title,
+                //                 article_location: item.article_location
+                //             }
+                //         }));
+                //     }
+                // });
+
+            },
+            minLength: 1,
+
+            select: function (event, ui) {
+                if (ui.item.article_location.substring(0, 4) == "http") {
+                    window.location = ui.item.article_location;
+                } else {
+                    window.location = '' + ui.item.article_location;
+                }
+            }
+        });
+
+        // 处理菜单超出
+    //     $(".navList li").mouseenter(function () {
+    //         $(this).find(".subnav").each(function () {
+    //             var top = $(this).offset().top || 0
+    //             var height = $(this).height() || 0
+    //             var screen = $(window).height() || 0
+    //             var scrollTop = $(window).scrollTop();
+    //             if (top + height - scrollTop > screen) {
+    //                 var items = $(this).css({width: '200%'}).find('a')
+    //                 var left = $(this).find('a:lt(' + (items.length / 2 + items.length % 2 / 2) + ')')
+    //                 var right = $(this).find('a:gt(' + (items.length / 2 - items.length % 2 / 2) + ')')
+    //                 left.wrapAll('<div class="fl nav-temp-wrap" style="width: 49%;border-right: 1px solid #eaeaea;margin-bottom:10px;"></div>')
+    //                 right.wrapAll('<div class="fr nav-temp-wrap" style="width: 50%"></div>')
+    //             }
+    //         })
+    //     }).mouseleave(function () {
+    //         $(this).find(".subnav").each(function () {
+    //             var content = $(this).attr('style', '').find('.content1')
+    //             content.find('.nav-temp-wrap').each(function () {
+    //                 $(this).find('a').appendTo(content)
+    //             }).remove();
+    //         })
+    //     })
+    // });
+        
+        $(".navList li").mouseenter(function () {
+            $(this).find(".subnav").each(function () {
+                var top = $(this).offset().top || 0
+                var height = $(this).height() || 0
+                var screen = $(window).height() || 0
+                var scrollTop = $(window).scrollTop();
+                if (top + height - scrollTop > screen) {
+                    var items = $(this).css({width: '200%'}).find('a')
+                    var left = $(this).find('a:lt(' + Math.ceil(items.length / 2) + ')')
+                    var right = $(this).find('a:gt(' + Math.floor(items.length / 2 - 0.1) + ')')
+                    left.wrapAll('<div class="fl nav-temp-wrap" style="width: 49%;border-right: 1px solid #eaeaea;margin-bottom:10px;"></div>')
+                    right.wrapAll('<div class="fr nav-temp-wrap" style="width: 50%"></div>')
+                }
+            })
+        }).mouseleave(function () {
+            $(this).find(".subnav").each(function () {
+                var content = $(this).attr('style', '').find('.content1')
+                content.find('.nav-temp-wrap').each(function () {
+                    $(this).find('a').appendTo(content)
+                }).remove();
+            })
+        })
+    });
+
+    /*文章标记已读*/
+    function articleReadTag(articleId, url) {
+        $.ajax({
+            url: "/portal/cmsarticleread/insert",
+            type: "post",
+            data: {article_id: articleId},
+            sync: false,
+            success: function (data) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    function artsearch() {
+        var focus = $("#search").val();
+        if (focus == "" || focus == "请输入关键字") {
+            alertTimerPopup(1000, ".errorPanel", true, ".blackMask", "请输入关键字!");
+            return;
+        } else {
+            var param = $("#artsear").serialize();
+            var Area_b_text = encodeURI(encodeURI(param));
+            window.open("/xwzx/ssjg?p=1&" + Area_b_text);
+        }
+    }
+</script>
+
+<!--弹出层开始-->
+	<div class="panel_blackMask blackMask"></div>
+	<div class="tcc fs18 panel successPanel ">
+        <div class="title"><p class="fl">信息提示</p><a href="javascript:;" class="close fr"><i class="iconfont fs18 closeBtn" onclick='closePopup(".successPanel",".blackMask")' ><span class="colorFFF">&#xe61b;</span></i></a>
+        <div class="clear"></div>
+        </div>
+        <div class="content color000">
+            <p class="tc success" style="display:block;"><i class="iconfont fs26 colorGreen pr5">&#xe61d;</i><font class='msg'>提示文字</font></p>
+        </div>
+    </div>
+
+<div class="tcc fs18 panel errorPanel ">
+        <div class="title"><p class="fl">信息提示</p><a href="javascript:;" class="close fr"><i class="iconfont fs18 closeBtn" onclick='closePopup(".errorPanel",".blackMask")' ><span class="colorFFF">&#xe61b;</span></i></a>
+        <div class="clear"></div>
+        </div>
+        <div class="content color000">
+            <p class="tc error" style="display:block;"><i class="iconfont fs26 colorRed pr5">&#xe61b;</i><font class='msg'>提示文字</font></p>
+        </div>
+    </div>
+    
+    <div class="tcc fs18 panel surealertPanel ">
+        <div class="title"><p class="fl">信息提示</p><a href="javascript:;" class="close fr"><i class="iconfont fs18 closeBtn" onclick='closePopup(".surealertPanel",".blackMask")' ><span class="colorFFF">&#xe61b;</span></i></a>
+        <div class="clear"></div>
+        </div>
+        <div class="content color000">
+            <p class="tc error" ><i class="iconfont fs26 colorRed pr5">&#xe61b;</i><font class='msg'>提示文字</font></p>
+            <p class="tc success" style="display:block;"><i class="iconfont fs26 colorGreen pr5">&#xe61d;</i><font class='msg'>提示文字</font></p>
+            <div class="btnList">
+            <a href="javascript:;" class="btn1 fl" onclick='locationPopup(".surealertPanel",".blackMask")' >确认</a>
+            <a href="javascript:;" class="btn2 fr" onclick='closePopup(".surealertPanel",".blackMask")' >取消</a>
+            </div>
+            <input type="hidden" id="urlpath" name="urlpath" value=""/>
+        </div>
+    </div>
+<!--弹出层结束-->
+<script>
+function locationPopup(_targetPopup,_targetMask){
+	var url=$("#urlpath").val();
+/* 	alert(url); */
+	if(url.length>0&&url!=null){
+		window.location=url;
+	}else{
+		closePopup(_targetPopup,_targetMask);
+	}
+}
+
+</script><script type="text/javascript">
+function downloadPDF(path){
+	var path1 = path;
+	window.open("/portal/pdfdownload/download?path="+encodeURI(encodeURI(path1)));
+}
+//enter键搜索
+function keySearch(){
+	if(event.keyCode==13){//回车键的键值为13
+		artsearch();
+	}
+}
+
+</script>
+<div class="header">
+    <div class="top">
+      <div class="topBar center1200">
+        <div class="fl"></div>
+          <div class="topBarRight">
+              <!--<a href="javascript:;"><i class="iconfont fs20 fl mr5 color999"></i>APP下载
+              <div class="img"><img src="/static/images/appImg.png" width="84" height="91" /></div>
+            </a>--> 
+              <a href="javascript:;" ><i class="iconfont fs18 fl mr5 color999"></i>官方微信
+              <div class="img"><img src="/static/images/wxImg.png" width="84" height="91" /></div>
+              </a>
+               <div class="clear"></div>
+          </div>
+          <div class="clear"></div>
+      </div>
+    </div>
+  <div class="headerCenter center1200" onkeydown="keySearch();">
+        <form id="artsear" onsubmit="return false">
+        <div class="logo"><a href="/"><img src="/static/images/logo.png" width="198" height="46" /></a></div>
+        <div class="search">
+        	<a href="http://en.sge.com.cn" class="englishBtn">International Business</a>
+            <div class="searchbBar">
+				<i><img src="/static/images/header_search.png"/></i>
+           		<input name="focus" id="search" type="text" placeholder="请输入关键字，搜栏目 / 行情资讯 / 公告 / 规则" class="sousou border_ea" onkeydown="if(event.keyCode==13){artsearch();}">
+            	<div class="searchBtn"  onclick="artsearch()">搜索</div>
+            </div>
+        </div>
+        </form>
+</div>
+    <div class="nav">
+          <div class="navList">
+               <ul>
+                 <li class=""><a href="/" target="_blank">首页</a>
+                 
+                 </li>
+                 <li class=""><a href="/jjsjs" target="_blank">关于上金所</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                        <a href="/jjsjs">交易所介绍</a>
+                       <a href="/jjsnotice" >公告</a>
+                        <a href="/ppzx" >品牌中心</a>
+                   	 	<a href="/gyjjs/dsj" >大事记</a>
+                        <a href="/bsld" >博士后工作站</a>
+                     	<a href="/gyjjs/gjjlyhz" >国际交流与合作</a>  
+                        <!-- <a href="/gyjjs/xxgk" >信息公开</a> -->
+                        <a href="/gyjjs/rczp" >人才招聘</a>
+                       <a href="/gyjjs/lxwm" >联系我们</a>   
+                     </div>
+                    <div class="clear"></div>
+                   </div>
+                 </div>
+                 </li>
+                 
+         		<!-- 新闻中心  开始-->
+                 <li>
+<!-- /NewCenter -->
+                 	<a href="/xwzx/esznzl" target="_blank">新闻中心</a> 
+				   	<div class="subnav"> 
+					    <div class="subnavCenter"> 
+						    <div class="content1">
+<a href="/xwzx/esznzl">聚焦二十大</a>
+		                      	<a href="/xwzx/NewsCenter_sge">交易所新闻</a>
+		                     	<a href="	/xwzx/newscenter_mtbd">媒体报道</a>
+		                        <a href="/xwzx/zyqwyx">战疫情 稳运行</a>
+	                   		</div> 
+			    	 	</div> 
+				     	<div class="clear"></div>
+				     </div> 
+			    </li>
+                 <!-- 新闻中心  结束-->
+                 <li><a href="/cpfw/Product_service" target="_blank">产品服务</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                         <a href="/cpfw/Product_service">竞价</a> 
+                      	 <a href="/cpfw/jypzlb">询价</a>
+                         <a href="/cpfw/cpdj">定价</a>
+                         <a href="/cpfw/zj">租借</a> 
+                         <a href="/cpfw/jsyz">清算与结算</a>
+                         <a href="/cpfw/bz">交割</a>
+                         <a href="/cpfw/gjb">国际板</a> 
+                         <a href="/cpfw/hjetf">黄金ETF</a>
+                     </div>
+                      <div class="clear"></div>
+                   </div>
+                   
+                 </div>
+                 </li>
+                 <li><a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27" target="_blank">数据资讯</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                      	 <a href="/sjzx/yshqbg">延时行情</a>
+						 <!--                          <a href="/sjzx/qxjj">远期价格曲线</a>       -->                    
+
+                         <a href="/sjzx/mrhq">行情走势</a> 
+
+                         <a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27">历史行情数据</a> 
+
+                         <a href="/sjzx/jzj">上海金基准价</a> 
+<a href="/sjzx/shyjzj">上海银基准价</a>
+						<!--                          <a href="/sjzx/shj">上海金专栏</a>  -->
+                         <a href="/sjzx/hqzb">行情周报</a>
+                         <a href="/sjzx/hqyb">行情月报</a>
+                         <a href="/sjzx/goldEtf?start_date=2026-02-27&end_date=2026-02-27">黄金ETF专栏</a>
+                         <a href="/sjzx/rzxxs">行情产品服务</a>
+                         <a href="/sjzx/xjscjgjz">询价市场价格基准</a>
+<!-- <a href="/sjzx/bzjxjsc">保证金询价市场数据</a> -->
+			<!-- <a href="/sjzx/zjjzll">黄金租借基准费率</a> -->
+                        <a href="/sjzx/hjzjckll">黄金租借参考费率</a>
+                         <a href="/sjzx/xjjg">现金交割专栏</a>
+                         <a href="/sjzx/hjzgtjsj">黄金资管统计数据</a>
+                   <a href="https://service.sge.com.cn:8443/financialinquiry/initAuth.htm">票据查验</a>
+                     </div>
+                      <div class="clear"></div>
+                   </div>
+                   
+                 </div>
+                 </li>
+                 <li><a href="/hyzq/xzzq" target="_blank">会员专区</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+<!--
+                 		  <a href="/login"><span>会员中心</span></a>
+-->
+                         <a href="/hyzq/mlycx">会员名录与查询</a>
+                         <a href="/hyzq/xzzq">下载专区</a>
+                          <a href="/hyzq/ems">发票EMS查询</a>
+                          <a href="/hyzq/jyy">水平考试成绩查询</a> 
+
+                          <a href="/hyzq/cyry">从业人员信息查询</a>
+                         <a href="http://sge.atacollege.cn/" target="_blank">从业人员培训入口</a>
+                         <a href="/hyzq/hyzc">会员之窗</a>
+                     </div>
+                 </div>
+                 </div>
+                 </li>
+                 <li><a href="/tzzjy/hjdjt" target="_blank">投资者服务</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                   <div class="content1">
+                         <a href="/tzzjy/hjdjt">黄金大讲堂</a>
+                         <a href="/tzzjy/sctg">市场合作与推广</a>
+                         <!-- <a href="/tzzjy/cjwt">交易指南</a> -->
+                         <a href="/tzzjy/gzyj">工作研究</a>
+                       <a href="/tzzjy/fxjyts">风险教育提示</a>
+                       <a href="/tzzjy/tjyd">投教园地</a>
+                  <!--     <a href="/tzzjy/yjt">易金通</a> -->
+                         <!-- <a href="/tzzjy/">发票EMS查询</a> -->
+                         <!--  <a href="/tzzjy/hjdjt">黄金大讲堂</a> -->
+                <!--         <a href="/tzzjy/kjxz">课件下载</a> -->
+                         <!--  <a href="javascript:;">财经日历</a>-->
+                         <!-- <a href="/tzzjy/spkc">视频课程</a>-->
+<a href="/tzzjy/sjsnb">上金所年报</a>
+                          <a href="/tzzjy/shzrbg">社会责任报告</a>
+
+                         <a href="/tzzjy/pfmi">PFMI</a>
+                     </div>
+                 </div>
+                 </div>
+                 </li>
+                 <li><a href="/guize/rule" target="_blank">制度与规则</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                        <a href="/guize/rule">黄金市场相关政策</a>
+                        <a href="/guize/ywgz">业务规则</a>
+                        <a href="/guize/jj">竞价</a>
+                        <a href="/guize/rljysxj">询价</a>
+                        <a href="/guize/qs">清算与结算</a>
+                     	
+                        <a href="/guize/jg">交割</a>
+                     	
+                        <a href="/guize/dj">定价</a>
+                     	
+                     	<a href="/guize/fxqbg">反洗钱专栏</a>
+                     </div>
+                 </div>
+                 </div>
+                 </li>
+             </ul>
+          </div>
+    </div>
+</div>
+
+<!--header end--><!--新闻中心部分开始-->
+<div class="jzk_main ">
+<div class="jzk_newsCenter_Main ">
+	<!--新闻中心标题开始--> 
+<!--新闻中心标题开始--> 
+	<script>
+		$(document).ready(function (){
+			$(".nav li:nth-child(5)").addClass('current').siblings().removeClass('current');
+			// $(".nav li:nth-child(5)").addClass('bgColor_tr').siblings().removeClass('bgColor_tr');	  
+		});
+	</script>
+    <div class="jzk_title">数据资讯<span>DATA CORPORATION</span></div>
+<!--新闻中心标题结束--> 
+	<!--新闻中心标题结束--> 
+	<!--新闻中心内容开始--> 
+    <div class="jzk_newsCenter_Cont">
+        <script type='text/javascript'> console.log('5') </script>
+<div class="leftColumnNav">
+            <div class="title">数据资讯</div>
+            <div class="btnList">
+            <ul>
+            <li class="">
+               <div class="item"><a href="/sjzx/yshqbg"><span>延时行情</span></a></div>
+               
+               </li> 
+               <li class="current">
+               <div class="item"><a href="/sjzx/mrhq"><span>行情走势</span></a></div>
+               
+               </li>
+            
+               <li  class="">
+              	  <div class="item "><a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27"><span>历史行情数据</span></a></div>
+                    <div class="subNav " >
+                  <!--  <a href="/sjzx/mrhqsj_new" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a> -->
+                   <!-- <a href="/sjzx/mrhqsj" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a> -->
+                   <a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a>
+                  <!-- <a href="/sjzx/myhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每月行情</a> -->
+                   <!-- <a href="/sjzx/shjzjhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海金基准价行情</a>
+<a href="/sjzx/shyjzjhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海银基准价行情</a> -->
+<a href="/sjzx/shanghaiAuAuto?start_date=2026-02-27&end_date=2026-02-27" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海金基准价行情</a>
+<a href="/sjzx/shanghaiAgAuto?start_date=2026-02-27&end_date=2026-02-27" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海银基准价行情</a>
+                   </div>
+               </li>
+               
+                <li class="">
+               		<div class="item"><a href="/sjzx/jzj"><span>上海金基准价</span></a></div>             
+               </li>
+<li class="">
+               		<div class="item"><a href="/sjzx/shyjzj"><span>上海银基准价</span></a></div>
+               </li>
+               
+             <!--   <li  class=""       >
+              	  <div class="item "><a href="/sjzx/qxjj"><span>远期价格曲线</span></a></div>
+                 <div class="subNav " >
+                   <a href="/sjzx/qxjj" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线简介</a>
+                   <a href="/sjzx/yqjgqxbzfa" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线编制方案</a>
+                   <a href="/sjzx/qxcx" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线查询</a>
+                   </div>
+               </li> -->
+<!-- <li class="">
+                    <div class="item "><a href="/sjzx/bzjxjsc"><span>保证金询价市场数据</span></a></div>
+                    <div class="subNav " >
+                        <a href="/sjzx/jydbzhb" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>即远掉标准化标的结算价查询</a>
+                    </div>
+                </li> -->
+
+              <!--  <li>
+               		<div class="item"><a href="#"><span>贵金属价格指数</span></a></div>
+               </li> -->
+               
+               <li class="">
+              	    <div class="item"><a href="/sjzx/hqzb"><span>行情周报</span></a></div> 
+               </li>
+               
+              <li class="">
+	               <div class="item"><a href="/sjzx/hqyb"><span>行情月报</span></a></div>
+	               </li>
+	               <!-- <li class="">
+	               <div class="item"><a href="/sjzx/shj"><span>上海金专栏</span></a></div>  
+              </li>
+                -->
+              <!-- <li class="">
+              	 <div class="item"><a href="/sjzx/hjETF"><span>黄金ETF专栏</span></a></div>
+              </li> -->
+              
+              <li class="">
+                <div class="item"><a href="/sjzx/goldEtf?start_date=2026-02-27&end_date=2026-02-27"><span>黄金ETF专栏</span></a></div>
+           </li>
+           
+              <li class="">
+              	<div class="item"><a href="/sjzx/rzxxs"><span>行情产品服务</span></a></div>    
+              </li>
+
+                <li class="">
+                    <div class="item "><a href="/sjzx/xjscjgjz"><span>询价市场价格基准</span></a></div>
+                    <div class="subNav " >
+                        <!--  <a href="/sjzx/mrhqsj_new" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a> -->
+                        <a href="/sjzx/xjscjgjz" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>询价市场价格基准编制方案</a>
+                        <a href="/sjzx/qxcx" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线查询</a>
+                        <a href="/sjzx/goldoptionsqxcx" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>询价期权隐含波动率曲线查询</a>
+                        <!--<a href="/sjzx/myhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线下载</a>-->
+                    </div>
+                </li>
+
+<!-- <li class="">
+                    <div class="item "><a href="/sjzx/zjjzll"><span>黄金租借基准费率</span></a></div>
+                    <div class="subNav " >
+                        <a href="/sjzx/zjjzll" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>数据查询</a>
+                        <a href="/sjzx/xgywbf" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>报价服务</a>
+                        <a href="/sjzx/bjcy" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>数据下载</a>
+                    </div>
+                </li> -->
+					<li class="">
+                    <div class="item"><a href="/sjzx/hjzjckll"><span>黄金租借参考费率</span></a></div>
+                </li>
+                <li class="">
+                    <div class="item"><a href="/sjzx/xjjg"><span>现金交割专栏</span></a></div>
+                </li>
+               <li class="">
+                    <div class="item"><a href="/sjzx/hjzgtjsj"><span>黄金资管统计数据</span></a></div>
+                </li>
+
+            </ul>
+            </div>
+        </div>        <div class="jzk_newsCenter_ContRight">
+<div class="subpageTitle">
+<h2>行情走势</h2>
+     <div class="weizhi">
+         <span class="ts"><a href="/index"><i class="iconfont  fs16 mr5"></i>首页</a></span>
+         <span>></span>
+         <span><a href="/sjzx/yshqbg">数据资讯</a></span>
+         <span>></span>
+         <span><a href="/sjzx/mrhq">行情走势</a></span>
+     </div>
+ </div>
+           
+           <div class="content border_ea mt30 mb20">
+            <div class="hqzsTitle">
+            <table width="860" border="0">
+                      <tr>
+                        <td height="50" width="370" class="txt">行情走势</td>
+						<td width="130"></td>
+						<td style="text-indent: 180px;"><select name="" class="select" id="instidsle" onchange="changegra()">
+                        	<option value ="Au99.99">Au99.99</option>
+                        	<option value ="Au99.95">Au99.95</option>
+                        	<option value ="Au100g">Au100g</option>
+                        	<option value ="Pt99.95">Pt99.95</option>
+                        	<option value ="Ag(T+D)">Ag(T+D)</option>
+                        	<option value ="Au(T+D)">Au(T+D)</option>
+                        	<option value ="mAu(T+D)">mAu(T+D)</option>
+                        	<option value ="Au(T+N1)">Au(T+N1)</option>
+                        	<option value ="Au(T+N2)">Au(T+N2)</option>
+                        	<option value ="Ag99.99">Ag99.99</option>
+                        	<option value ="iAu99.99">iAu99.99</option>
+                        	<option value ="Au99.5">Au99.5</option>
+                        	<option value ="iAu100g">iAu100g</option>
+                        	<option value ="iAu99.5">iAu99.5</option>
+                        	<option value ="PGC30g">PGC30g</option>
+                        	<option value ="NYAuTN06">NYAuTN06</option>
+                        	<option value ="NYAuTN12">NYAuTN12</option>
+                          
+                        </select></td>
+                        <!-- <td width="150"><input name=""type="text" readonly="true" class="date_picker"  id="datePicker1"/></td>                        
+                        <td width="90"><a href="javascript:;" class="linkBtn" style=" width:70px; height:30px;" onclick="query()">查询</a></td>
+                        <td>
+                         <a href="javascript:;" class="downloadBtn" style=" width:98px; height:28px; color:#fff">
+                                <i class="iconfont fs16 fl ml15 mr5 lh30"></i>
+                                <div class="fl lh30" onclick="download()">下载数据</div>
+                                <div class="clear"></div>
+                            </a>                            
+                         </td> -->
+                      </tr>
+                    </table>
+
+            </div>
+            <div class="hqzsPic">
+                 <div id="mydata" style="width:798px; height:428px">   <div id="container" style="height: 100%"></div></div>
+            </div>
+           </div>
+            <div class="hqzsTable memberName mb30" id="inshqinfo">
+            </div> 
+        </div>
+      <div class="clear"></div>  
+    </div>
+    
+<!--新闻中心内容结束--> 
+</div>
+<!--新闻中心部分结束-->
+</div>
+<script type="text/javascript">
+
+$(function(){
+	
+	var date=new Date();
+	var year=date.getFullYear();
+	var month=date.getMonth()+1;
+	if(month<10){
+		month="0"+month+"";
+	}
+	var day=date.getDate();
+	var daystr=year+"-"+month+"-"+day;
+	$("#datePicker1").val(daystr);
+	$('#datePicker1').datetimepicker({  //年月日
+	        format: 'yyyy-mm-dd',
+	        autoclose: true,
+	        todayBtn: true,
+	        startView: 'month',
+	        minView:'month',
+	        maxView:'decade',
+			language:  'zh-CN'
+	    }).on('changeDate', function(ev){
+			//日期选择后触发事件
+			 
+		});
+	 
+	
+	
+	$("#inshqinfo").load("/sjzx/mrhq_data",{"date":daystr});
+			
+});	
+
+
+</script>
+
+ <script type="text/javascript">
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+var data0;
+// 数据意义：开盘(open)，收盘(close)，最低(lowest)，最高(highest)
+
+initgra();
+		function initgra(){
+			 $.ajax({
+				 type:'post',
+				 url:'/graph/Dailyhq',
+				 data:{"instid":$("#instidsle").val()},
+				 async : false,
+				 success:function(data){
+					 data0=splitData(data.time);
+					 oprt();
+				 }
+			 });
+}
+
+		 
+
+function changegra(){
+	
+	initgra();
+}
+function query(){
+	 var time=$("#datePicker1").val();
+	 loaddate(time);
+}
+function loaddate(date){
+	$("#inshqinfo").load("/sjzx/mrhq_data",{"date":date});
+		}	
+function oprt(){
+	option = {
+		    title: {
+		        text: '',
+		        left: 0
+		    },
+		    tooltip: {
+		        trigger: 'axis',
+		        axisPointer: {
+		            type: 'line'
+		        }
+		    },
+		  
+		    grid: {
+		        left: '10%',
+		        right: '10%',
+		        bottom: '15%'
+		    },
+		    xAxis: {
+		        type: 'category',
+		        data: data0.categoryData,
+		        scale: true,
+		        boundaryGap : false,
+		        axisLine: {onZero: false},
+		        splitLine: {show: false},
+		        splitNumber: 20,
+		        min: 'dataMin',
+		        max: 'dataMax'
+		    },
+		    yAxis: {
+		        scale: true,
+		        splitArea: {
+		            show: true
+		        }
+		    },
+		    dataZoom: [
+		        {
+		            type: 'inside',
+		            start: 50,
+		            end: 100
+		        },
+		        {
+		            show: true,
+		            type: 'slider',
+		            y: '90%',
+		            start: 50,
+		            end: 100
+		        }
+		    ],
+		    series: [
+		        {
+		            name: '日K',
+		            type: 'candlestick',
+		            data: data0.values,
+		            markPoint: {
+		                label: {
+		                    normal: {
+		                        formatter: function (param) {
+		                            return param != null ? Math.round(param.value) : '';
+		                        }
+		                    }
+		                },
+		                data: [
+		                    {
+		                        name: 'XX标点',
+		                        coord: ['2013/5/31', 2300],
+		                        value: 2300,
+		                        itemStyle: {
+		                            normal: {color: 'rgb(41,60,85)'}
+		                        }
+		                    },
+		                    {
+		                        name: 'highest value',
+		                        type: 'max',
+		                        valueDim: 'highest'
+		                    },
+		                    {
+		                        name: 'lowest value',
+		                        type: 'min',
+		                        valueDim: 'lowest'
+		                    }/*,
+		                    {
+		                        name: 'average value on close',
+		                        type: 'average',
+		                        valueDim: 'close'
+		                    }*/
+		                ],
+		                tooltip: {
+		                    formatter: function (param) {
+		                       // return param.name + '<br>' + (param.data.coord || '');
+		                       return param.name;
+		                    }
+		                }
+		            },
+		            markLine: {
+		                symbol: ['none', 'none'],
+		                data: [
+		                    [
+		                        {
+		                            name: 'from lowest to highest',
+		                            type: 'min',
+		                            valueDim: 'lowest',
+		                            symbol: 'circle',
+		                            symbolSize: 10,
+		                            label: {
+		                                normal: {show: false},
+		                                emphasis: {show: false}
+		                            }
+		                        },
+		                        {
+		                            type: 'max',
+		                            valueDim: 'highest',
+		                            symbol: 'circle',
+		                            symbolSize: 10,
+		                            label: {
+		                                normal: {show: false},
+		                                emphasis: {show: false}
+		                            }
+		                        }
+		                    ],
+		                    {
+		                        name: 'min line on close',
+		                        type: 'min',
+		                        valueDim: 'close'
+		                    },
+		                    {
+		                        name: 'max line on close',
+		                        type: 'max',
+		                        valueDim: 'close'
+		                    }
+		                ]
+		            }
+		        },
+		       
+
+		    ]
+		};
+
+
+		if (option && typeof option === "object") {
+		    myChart.setOption(option, true);
+		};
+	
+}
+
+function splitData(rawData) {
+    var categoryData = [];
+    var values = []
+    for (var i = 0; i < rawData.length; i++) {
+        categoryData.push(rawData[i].splice(0, 1)[0]);
+        values.push(rawData[i])
+    }
+    return {
+        categoryData: categoryData,
+        values: values
+    };
+}
+
+function calculateMA(dayCount) {
+    var result = [];
+    for (var i = 0, len = data0.values.length; i < len; i++) {
+        if (i < dayCount) {
+            result.push('-');
+            continue;
+        }
+        var sum = 0;
+        for (var j = 0; j < dayCount; j++) {
+            sum += data0.values[i - j][1];
+        }
+        result.push(sum / dayCount);
+    }
+    return result;
+}
+function download(){
+	var time=$("#datePicker1").val();
+	window.open(window.location.origin+ "/graph/downloadExcel?date="+time);
+}
+
+       </script><style>
+.quikeBtns li{ cursor:pointer;}
+</style>
+<div class="footer">
+<div class="footQuike">	
+    <div class="quikeBtns">
+        <ul>
+          <li onclick="javascript:window.location='/hydwzl';"  style="width:400px;" >
+              <h2>会员单位专栏</h2>
+              <p>The member zone</p>
+          </li>
+          <li onclick="javascript:window.location='/zlhzhb';" style="width:400px;"  >
+              <h2>战略合作伙伴</h2>
+              <p>strategy partner</p>
+          </li>
+          <!--<li onclick="javascript:window.location='/scpxjg';"/>
+              <h2>市场培训机构</h2>
+              <p>Trading center</p>
+          </li>-->
+          <li onclick="javascript:window.location='/yqlj';" style="width:400px;"  >
+              <h2>友情链接</h2>
+              <p>links</p>
+          </li>
+        </ul>
+    </div>
+    <div class="quikeCont">
+        <div class="sitemap fl">
+            <ul class="clear">
+        <!--      <li>
+               <h2>快速导航</h2>
+                 <a href="javascript:;">申请开户</a>
+                 <a href="/hyzq/xzzq">下载专区</a>
+             </li> -->
+             <li>
+                 <h2>关于上金所</h2>
+                 <a href="/jjsnotice">上金所公告</a>
+                 <a href="/jjsjs">上金所介绍</a>
+<!--                  <a href="javascript:;">上金所章程</a> -->
+            </li>
+            <li>
+               <h2>数据资讯</h2>
+                 <a href="/sjzx/hqzb">行情周报</a>
+                 <a href="/sjzx/hqyb">行情月报</a>
+                 <a href="/sjzx/jzj">上海金基准价</a> 
+             </li> 
+             <li>
+                 <h2>会员服务</h2>
+<!--
+                 	<a href="/login"><span>会员公告</span></a>
+-->                  
+                  <!--   -->                  	<!--未登录状态 -->
+                 	<!--<a href="/static/upload/file/28802.pdf" target="_blank"><span>会员管理办法</span></a>
+                  -->
+<!--
+                 	<a href="/login"><span>会员资讯</span></a>
+-->
+
+                  <a href="/hyzq/mlycx">会员名录与查询</a>
+                  <a href="/hyzq/xzzq">下载专区</a>
+             </li>
+             <li>
+                 <h2>其他</h2>
+                 <a href="/tzzjy/tzzfu/jyzn">交易指南</a>
+                 <a href="/cpfw/bz">质量标准</a>
+
+                <!--  <a href="#">应急管理</a> -->
+             </li>
+             
+            </ul>
+        </div>
+        <div class="contactInfor fl">
+             <p><a href="https://www.sge.com.cn/xwzx/NewsCenter_sge/5145290" target="_blank">
+               <img alt="上海市优秀网站" src="/static/images/index/excellentWebsite.png" width="182px" height="43px"></a></p>
+            <p>地址：上海市黄浦区中山南路699号</p>              <p>电话：<a href='tel://021-33189588'>021-33189588</a></p>              <p>传真：021-33662058</p>              <!--p>邮箱：sge@sge.com.cn</p-->      
+        </div>
+
+<div class="weixin fl">
+        <img src="/static/images/footerWx.png" width="82" height="82" />
+        <p>交易所微信</p>
+        </div>
+         <!-- <div class="yjt fr">
+        <img src="/static/images/footerAPP.png" width="82" height="82" />
+        <p>易金通</p>
+        </div>-->
+        <div class="clear"></div>
+    </div>
+</div>
+<div class="footCopyright center1200">
+    <div class="txt fl">
+    <p> Copyright 2016 上海黄金交易所 All Right Reserved </p>
+    <p>  </p>
+    </div>
+   <div class="right fr">
+<span style="margin-right:20px; float:left;">本网站支持IPV6</span>
+   		 		<a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31010102002879" class="fl ba">沪公网安备 31010102002879号</p></a>
+		 	
+             <a class="icp fr ml20" href="https://beian.miit.gov.cn/">沪ICP备11050182号-1</a>
+    </div>
+    <div class="clear"></div>
+</div>
+
+</div></body>
+</html>

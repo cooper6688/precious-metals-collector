@@ -1,0 +1,2005 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+<title>每日行情</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Language" content="zh-CN" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<link rel="shortcut icon" href="ico" type="image/x-icon" />
+<meta name="description" content="每日行情">
+<meta name="keyword" content="每日行情">
+<meta name="viewport" content="width=device-width">
+<!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/> --><link rel="stylesheet" type="text/css" href="/static/css/init.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/global.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery.mCustomScrollbar.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/datePicker.css"/>
+<!--[if IE]><link rel="stylesheet" type="text/css" href="/static/css/ie.css"/><![endif]-->
+<link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap-datetimepicker.min.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css" />
+<script type="text/javascript" src="/static/js/echarts.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="/static/js/jbase64.js"></script>
+<script type="text/javascript" src="/static/js/tools.js"></script>
+<script type="text/javascript" src="/static/js/main.js"></script>
+<script type="text/javascript" src="/static/js/pdfobject.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.js"></script>
+<script type="text/javascript" src="/static/js/md5.js"></script>
+<script type="text/javascript" src="/static/js/func.js"></script>
+<script type="text/javascript" src="/static/js/highstock.js"></script>
+<script type="text/javascript" src="/static/js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap-datetimepicker.min.js" charset="UTF-8"></script>
+<script type="text/javascript" src="/static/js/locales/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+<style type="text/css">
+.articleList  li span br,
+.contList a b br {
+display: none;
+}
+</style>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?9165e30c92968eb1baa5e3eb5f34dc60";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<!-- 红色样式 -->
+<!--
+<style type="text/css">
+.leftColumnNav .btnList .current .item {
+    background: #b2d9f0;
+    background-image: url(/upload/image/202201/01/newsCenterLeftSidBg2_2.png);
+    background-repeat: no-repeat;
+    background-position: 209px 0;
+}
+.leftColumnNav .btnList .item:hover {
+    background: #b2d9f0;
+    background-image: url(/upload/image/202201/01/newsCenterLeftSidBg2_2.png);
+    background-repeat: no-repeat;
+    background-position: 209px 0;
+}
+</style>
+
+<style type="text/css">
+    /* #0080cc */
+    .nav,
+    .bannerBtnList li,
+    .tipsBar,
+    .leftColumnNav .title{
+        background: #EE1C25!important;
+    }
+
+.quikeBtns li h2,
+.jzk_title,
+    .leftColumnNav .btnList .item a:hover,
+    .leftColumnNav .btnList li .subNav .current,
+    .leftColumnNav .btnList .current .item a,
+    .leftColumnNav .btnList li .subNav a:hover{
+        color: #EE1C25!important;
+    }
+    .searchBtn,
+    .headerCenter .search .englishBtn {
+        background-color: #EE1C25!important;
+    }
+
+    /* #198cd1 */
+    .navList li {
+        border-right: 1px solid #c8102e!important;;
+    }
+    /* #008bdd */
+    .searchBtn:hover,
+    .headerCenter .search .englishBtn:hover {
+        background-color: #f54b52!important;
+    }
+    .subnav .content1 a {
+        color: #f54b52!important;
+    }
+    /* #9ed4ff */
+    .color_9ed4ff,
+    .jzk_title span{
+        color: #f98f93!important;;
+    }
+    .leftColumnNav .btnList>ul>li>.item:hover,
+    .leftColumnNav .btnList>ul>li.current>.item{
+        background-color: #feafb3!important;
+    }
+    .leftColumnNav .btnList .subNav .item,
+    .leftColumnNav .subNav,
+    .leftColumnNav .btnList li .subNav a {
+        border-bottom-color: #f7cdcf!important;;
+    }
+    /* #f4fbff */
+    .leftColumnNav .subNav {
+        background: #f7cdcf!important;
+    }
+
+</style>
+-->
+        <script>
+            $(document).ready(function () {
+                $('.nav li:nth-child(5)')
+                    .addClass('current')
+                    .siblings()
+                    .removeClass('current');
+            });
+        </script>
+    </head>
+    <body>
+<!-- 修改背景颜色 --> <link rel="stylesheet" type="text/css" href="/static/css/add.css"/>
+<!-- 全网黑白-->
+<!--
+<style>
+html {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  -ms-filter: grayscale(100%);
+  -o-filter: grayscale(100%);
+  filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+  _filter:none;
+}
+</style>
+<style>
+
+     html {
+         filter: grayscale(100%);
+         -webkit-filter: grayscale(100%);
+         -moz-filter: grayscale(100%);
+         -ms-filter: grayscale(100%);
+         -o-filter: grayscale(100%);
+         filter: progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);
+         -webkit-filter: grayscale(1);
+         filter: gray
+     }
+
+     img,* {
+         filter: gray; /* just for IE6-9 */
+}
+.navList .current ,.moreBtn {
+  background:#b1b1b1; 
+border: none;
+}
+
+.colorRed{
+color: #3d3d3d;
+}
+.colorGreen {
+  color:#a4a4a4;
+}
+
+     /* #0080cc */
+     .jzk_swhj_contListBtn,
+     .ylbzj .bzjlist .xqbtn a,
+     .titleBar .current,
+     .hqzsTitle table,
+     #instidsle option:valid,
+     .datetimepicker table tr td span.active:active, .datetimepicker table tr td span.active:hover:active, .datetimepicker table tr td span.active.disabled:active, .datetimepicker table tr td span.active.disabled:hover:active, .datetimepicker table tr td span.active.active, .datetimepicker table tr td span.active:hover.active, .datetimepicker table tr td span.active.disabled.active, .datetimepicker table tr td span.active.disabled:hover.active,
+     .jzk_jyy_searchBar,
+     .tcc .title,
+     .nav,
+     .bannerBtnList li,
+     .tipsBar,
+     .leftColumnNav .title {
+         background: #494949!important;
+     }
+     .dajishiCont .left .current .txt span, .dajishiCont .right .current .txt span, .dajishiCont .left .current .time, .dajishiCont .right .current .time,
+     .downloadBtn_blue,
+     .articleList li:hover .downloadBtn_blue i,
+     .colorBlue,
+     .jzk_jysNews_title h2,
+     .zj_content .title h2,
+     .articleList>ul>li.bgColor_tr>a>i,
+     .doc,
+
+     .quikeBtns li h2,
+     .columnTitle h2,
+     .newsCenterTitle .titleList .current,
+     .marketTrend .title h2,
+     .subpageTitle h2,
+     .login .title h2,
+     .tzz_kcfl .controlBtn:hover,
+
+     .leftColumnNav .btnList .item a:hover,
+     .leftColumnNav .btnList li .subNav .current,
+     .leftColumnNav .btnList .current .item a,
+     .leftColumnNav .btnList li .subNav a:hover{
+         color: #494949!important;
+     }
+     .jzk_jysNews_title h2,
+     .login .title h2,
+
+     .newsCenterTitle .titleList .current,
+     .dataStatistics .columnTitle .active,
+     .columnTitle h2,
+     .subpageTitle h2  {
+         border-bottom-color: #494949!important;;
+     }
+     .searchBtn,
+     .headerCenter .search .englishBtn {
+         background-color: #494949!important;
+     }
+     .jzk_title {
+         color: #494949!important;
+     }
+
+     /* #198cd1 */
+     .navList li {
+         border-right: 1px solid #494949!important;;
+     }
+     /* #008bdd */
+     .searchBtn:hover,
+     .headerCenter .search .englishBtn:hover {
+         background-color: #494949!important;
+     }
+     .subnav .content1 a {
+         color: #494949!important;
+     }
+     /* #9ed4ff */
+     .color_9ed4ff,
+     .jzk_title span{
+         color: #494949!important;;
+     }
+     .downloadBtn_blue,
+     .jzk_swhj_jyCont>table th,
+     .memberName table .title,
+     .topDiv table .title,
+     tr.sec,
+     .junzhiDiv .title,
+     .memberTable th,
+     .ss-table tr:nth-of-type(1),
+
+     .leftColumnNav .btnList>ul>li>.item:hover,
+     .leftColumnNav .btnList>ul>li.current>.item{
+         background-color: #feafb3!important;
+     }
+     .downloadBtn_blue,
+     .tzz_kcfl .controlBtn:hover{
+         border-color: #feafb3!important;
+     }
+     .leftColumnNav .btnList .subNav .item,
+     .leftColumnNav .subNav,
+     .leftColumnNav .btnList li .subNav a {
+         border-bottom-color: #494949!important;;
+     }
+     /* #f4fbff */
+     .bgColor_tr,
+     select.memberSel,
+     table#rentPriceOneDayTable tbody tr:nth-of-type(odd),
+     table#reportTable tbody tr:nth-of-type(odd),
+     table#junzhiTable tbody tr:nth-of-type(odd),
+     .tzz_kcfl .controlBtn:hover,
+
+     .leftColumnNav .subNav {
+         background: #494949!important;
+     }
+ </style>
+ <script type="text/javascript">
+     var grayscale=function(){var e={colorProps:["color","backgroundColor","borderBottomColor","borderTopColor","borderLeftColor","borderRightColor","backgroundImage"],externalImageHandler:{init:function(e,t){if(e.nodeName.toLowerCase()==="img"){}else{r(e).backgroundImageSRC=t;e.style.backgroundImage=""}},reset:function(e){if(e.nodeName.toLowerCase()==="img"){}else{e.style.backgroundImage="url("+(r(e).backgroundImageSRC||"")+")"}}}},t=function(){try{window.console.log.apply(console,arguments)}catch(e){}},n=function(e){return(new RegExp("https?://(?!"+window.location.hostname+")")).test(e)},r=function(){var e=[0],t="data"+ +(new Date);return function(n){var r=n[t],i=e.length;if(!r){r=n[t]=i;e[r]={}}return e[r]}}(),i=function(e,t,n){var s=document.createElement("canvas"),u=s.getContext("2d"),a=e.naturalHeight||e.offsetHeight||e.height,f=e.naturalWidth||e.offsetWidth||e.width,l;s.height=a;s.width=f;u.drawImage(e,0,0);try{l=u.getImageData(0,0,f,a)}catch(c){}if(t){i.preparing=true;var h=0;(function(){if(!i.preparing){return}if(h===a){u.putImageData(l,0,0,0,0,f,a);n?r(n).BGdataURL=s.toDataURL():r(e).dataURL=s.toDataURL()}for(var t=0;t<f;t++){var c=(h*f+t)*4;l.data[c]=l.data[c+1]=l.data[c+2]=o(l.data[c],l.data[c+1],l.data[c+2])}h++;setTimeout(arguments.callee,0)})();return}else{i.preparing=false}for(var h=0;h<a;h++){for(var p=0;p<f;p++){var d=(h*f+p)*4;l.data[d]=l.data[d+1]=l.data[d+2]=o(l.data[d],l.data[d+1],l.data[d+2])}}u.putImageData(l,0,0,0,0,f,a);return s},s=function(e,t){var n=document.defaultView&&document.defaultView.getComputedStyle?document.defaultView.getComputedStyle(e,null)[t]:e.currentStyle[t];if(n&&/^#[A-F0-9]/i.test(n)){var r=n.match(/[A-F0-9]{2}/ig);n="("+parseInt(r[0],16)+","+parseInt(r[1],16)+","+parseInt(r[2],16)+")"}return n},o=function(e,t,n){return parseInt(.2125*e+.7154*t+.0721*n,10)},u=function(e){var t=Array.prototype.slice.call(e.getElementsByTagName("*"));t.unshift(e);return t};var a=function(t){if(t&&t[0]&&t.length&&t[0].nodeName){var f=Array.prototype.slice.call(t),l=-1,c=f.length;while(++l<c){a.call(this,f[l])}return}t=t||document.documentElement;if(!document.createElement("canvas").getContext){t.style.filter="progid:DXImageTransform.Microsoft.BasicImage(grayscale=1)";t.style.zoom=1;return}var h=u(t),p=-1,d=h.length;while(++p<d){var v=h[p];if(v.nodeName.toLowerCase()==="img"){var m=v.getAttribute("src");if(!m){continue}if(n(m)){e.externalImageHandler.init(v,m)}else{r(v).realSRC=m;try{v.src=r(v).dataURL||i(v).toDataURL()}catch(g){e.externalImageHandler.init(v,m)}}}else{for(var y=0,b=e.colorProps.length;y<b;y++){var w=e.colorProps[y],E=s(v,w);if(!E){continue}if(v.style[w]){r(v)[w]=E}if(E.substring(0,4)==="("){var S=o.apply(null,E.match(/\d+/g));v.style[w]=E="("+S+","+S+","+S+")";continue}if(E.indexOf("url(")>-1){var x=/\(['"]?(.+?)['"]?\)/,T=E.match(x)[1];if(n(T)){e.externalImageHandler.init(v,T);r(v).externalBG=true;continue}try{var N=r(v).BGdataURL||function(){var e=document.createElement("img");e.src=T;return i(e).toDataURL()}();v.style[w]=E.replace(x,function(e,t){return"("+N+")"})}catch(g){e.externalImageHandler.init(v,T)}}}}}};a.reset=function(t){if(t&&t[0]&&t.length&&t[0].nodeName){var i=Array.prototype.slice.call(t),s=-1,o=i.length;while(++s<o){a.reset.call(this,i[s])}return}t=t||document.documentElement;if(!document.createElement("canvas").getContext){t.style.filter="progid:DXImageTransform.Microsoft.BasicImage(grayscale=0)";return}var f=u(t),l=-1,c=f.length;while(++l<c){var h=f[l];if(h.nodeName.toLowerCase()==="img"){var p=h.getAttribute("src");if(n(p)){e.externalImageHandler.reset(h,p)}h.src=r(h).realSRC||p}else{for(var d=0,v=e.colorProps.length;d<v;d++){if(r(h).externalBG){e.externalImageHandler.reset(h)}var m=e.colorProps[d];h.style[m]=r(h)[m]||""}}}};a.prepare=function(e){if(e&&e[0]&&e.length&&e[0].nodeName){var t=Array.prototype.slice.call(e),o=-1,f=t.length;while(++o<f){a.prepare.call(null,t[o])}return}e=e||document.documentElement;if(!document.createElement("canvas").getContext){return}var l=u(e),c=-1,h=l.length;while(++c<h){var p=l[c];if(r(p).skip){return}if(p.nodeName.toLowerCase()==="img"){if(p.getAttribute("src")&&!n(p.src)){i(p,true)}}else{var d=s(p,"backgroundImage");if(d.indexOf("url(")>-1){var v=/\(['"]?(.+?)['"]?\)/,m=d.match(v)[1];if(!n(m)){var g=document.createElement("img");g.src=m;i(g,true,p)}}}}};return a}()
+
+   
+         var navStr = navigator.userAgent.toLowerCase();
+         if(navStr.indexOf("msie 10.0")!==-1||navStr.indexOf("rv:11.0")!==-1){ // 判断是IE10或者IE11
+             window.onload=function(){
+                 grayscale(document.getElementsByClassName('warp'));
+                 grayscale(document.getElementsByClassName('warp2'));
+                 grayscale(document.getElementsByClassName('header'));
+                 grayscale(document.getElementsByClassName('footer'));
+                 grayscale(document.getElementsByClassName('bannerImgList'));
+             }
+         }
+
+ </script>
+-->
+<script type="text/javascript">
+    $(function () {
+        $('[href]').each(function () {
+            $(this).attr('href', $(this).attr('href').replace(/:\/\//g, ':////').replace(/\/\//g, '/'))
+        })
+        $('[onclick]').each(function () {
+            $(this).attr('onclick', $(this).attr('onclick').replace(/:\/\//g, ':////').replace(/\/\//g, '/'))
+        })
+        var focusname = $("#search").val();
+        $("#search").autocomplete({
+            source: function (request, response) {
+                // var focusname1 = encodeURI(encodeURI(request.term));
+                // $.ajax({
+                //     url: '/protal/article/articleSearch',
+                //     dataType: "json",
+                //     data: {"inputStr": focusname1},
+                //     success: function (data) {
+                //         response($.map(data.data, function (item) {
+                //             return {
+                //                 lable: item.title,
+                //                 value: item.title,
+                //                 article_location: item.article_location
+                //             }
+                //         }));
+                //     }
+                // });
+
+            },
+            minLength: 1,
+
+            select: function (event, ui) {
+                if (ui.item.article_location.substring(0, 4) == "http") {
+                    window.location = ui.item.article_location;
+                } else {
+                    window.location = '' + ui.item.article_location;
+                }
+            }
+        });
+
+        // 处理菜单超出
+    //     $(".navList li").mouseenter(function () {
+    //         $(this).find(".subnav").each(function () {
+    //             var top = $(this).offset().top || 0
+    //             var height = $(this).height() || 0
+    //             var screen = $(window).height() || 0
+    //             var scrollTop = $(window).scrollTop();
+    //             if (top + height - scrollTop > screen) {
+    //                 var items = $(this).css({width: '200%'}).find('a')
+    //                 var left = $(this).find('a:lt(' + (items.length / 2 + items.length % 2 / 2) + ')')
+    //                 var right = $(this).find('a:gt(' + (items.length / 2 - items.length % 2 / 2) + ')')
+    //                 left.wrapAll('<div class="fl nav-temp-wrap" style="width: 49%;border-right: 1px solid #eaeaea;margin-bottom:10px;"></div>')
+    //                 right.wrapAll('<div class="fr nav-temp-wrap" style="width: 50%"></div>')
+    //             }
+    //         })
+    //     }).mouseleave(function () {
+    //         $(this).find(".subnav").each(function () {
+    //             var content = $(this).attr('style', '').find('.content1')
+    //             content.find('.nav-temp-wrap').each(function () {
+    //                 $(this).find('a').appendTo(content)
+    //             }).remove();
+    //         })
+    //     })
+    // });
+        
+        $(".navList li").mouseenter(function () {
+            $(this).find(".subnav").each(function () {
+                var top = $(this).offset().top || 0
+                var height = $(this).height() || 0
+                var screen = $(window).height() || 0
+                var scrollTop = $(window).scrollTop();
+                if (top + height - scrollTop > screen) {
+                    var items = $(this).css({width: '200%'}).find('a')
+                    var left = $(this).find('a:lt(' + Math.ceil(items.length / 2) + ')')
+                    var right = $(this).find('a:gt(' + Math.floor(items.length / 2 - 0.1) + ')')
+                    left.wrapAll('<div class="fl nav-temp-wrap" style="width: 49%;border-right: 1px solid #eaeaea;margin-bottom:10px;"></div>')
+                    right.wrapAll('<div class="fr nav-temp-wrap" style="width: 50%"></div>')
+                }
+            })
+        }).mouseleave(function () {
+            $(this).find(".subnav").each(function () {
+                var content = $(this).attr('style', '').find('.content1')
+                content.find('.nav-temp-wrap').each(function () {
+                    $(this).find('a').appendTo(content)
+                }).remove();
+            })
+        })
+    });
+
+    /*文章标记已读*/
+    function articleReadTag(articleId, url) {
+        $.ajax({
+            url: "/portal/cmsarticleread/insert",
+            type: "post",
+            data: {article_id: articleId},
+            sync: false,
+            success: function (data) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    function artsearch() {
+        var focus = $("#search").val();
+        if (focus == "" || focus == "请输入关键字") {
+            alertTimerPopup(1000, ".errorPanel", true, ".blackMask", "请输入关键字!");
+            return;
+        } else {
+            var param = $("#artsear").serialize();
+            var Area_b_text = encodeURI(encodeURI(param));
+            window.open("/xwzx/ssjg?p=1&" + Area_b_text);
+        }
+    }
+</script>
+
+<!--弹出层开始-->
+	<div class="panel_blackMask blackMask"></div>
+	<div class="tcc fs18 panel successPanel ">
+        <div class="title"><p class="fl">信息提示</p><a href="javascript:;" class="close fr"><i class="iconfont fs18 closeBtn" onclick='closePopup(".successPanel",".blackMask")' ><span class="colorFFF">&#xe61b;</span></i></a>
+        <div class="clear"></div>
+        </div>
+        <div class="content color000">
+            <p class="tc success" style="display:block;"><i class="iconfont fs26 colorGreen pr5">&#xe61d;</i><font class='msg'>提示文字</font></p>
+        </div>
+    </div>
+
+<div class="tcc fs18 panel errorPanel ">
+        <div class="title"><p class="fl">信息提示</p><a href="javascript:;" class="close fr"><i class="iconfont fs18 closeBtn" onclick='closePopup(".errorPanel",".blackMask")' ><span class="colorFFF">&#xe61b;</span></i></a>
+        <div class="clear"></div>
+        </div>
+        <div class="content color000">
+            <p class="tc error" style="display:block;"><i class="iconfont fs26 colorRed pr5">&#xe61b;</i><font class='msg'>提示文字</font></p>
+        </div>
+    </div>
+    
+    <div class="tcc fs18 panel surealertPanel ">
+        <div class="title"><p class="fl">信息提示</p><a href="javascript:;" class="close fr"><i class="iconfont fs18 closeBtn" onclick='closePopup(".surealertPanel",".blackMask")' ><span class="colorFFF">&#xe61b;</span></i></a>
+        <div class="clear"></div>
+        </div>
+        <div class="content color000">
+            <p class="tc error" ><i class="iconfont fs26 colorRed pr5">&#xe61b;</i><font class='msg'>提示文字</font></p>
+            <p class="tc success" style="display:block;"><i class="iconfont fs26 colorGreen pr5">&#xe61d;</i><font class='msg'>提示文字</font></p>
+            <div class="btnList">
+            <a href="javascript:;" class="btn1 fl" onclick='locationPopup(".surealertPanel",".blackMask")' >确认</a>
+            <a href="javascript:;" class="btn2 fr" onclick='closePopup(".surealertPanel",".blackMask")' >取消</a>
+            </div>
+            <input type="hidden" id="urlpath" name="urlpath" value=""/>
+        </div>
+    </div>
+<!--弹出层结束-->
+<script>
+function locationPopup(_targetPopup,_targetMask){
+	var url=$("#urlpath").val();
+/* 	alert(url); */
+	if(url.length>0&&url!=null){
+		window.location=url;
+	}else{
+		closePopup(_targetPopup,_targetMask);
+	}
+}
+
+</script><script type="text/javascript">
+function downloadPDF(path){
+	var path1 = path;
+	window.open("/portal/pdfdownload/download?path="+encodeURI(encodeURI(path1)));
+}
+//enter键搜索
+function keySearch(){
+	if(event.keyCode==13){//回车键的键值为13
+		artsearch();
+	}
+}
+
+</script>
+<div class="header">
+    <div class="top">
+      <div class="topBar center1200">
+        <div class="fl"></div>
+          <div class="topBarRight">
+              <!--<a href="javascript:;"><i class="iconfont fs20 fl mr5 color999"></i>APP下载
+              <div class="img"><img src="/static/images/appImg.png" width="84" height="91" /></div>
+            </a>--> 
+              <a href="javascript:;" ><i class="iconfont fs18 fl mr5 color999"></i>官方微信
+              <div class="img"><img src="/static/images/wxImg.png" width="84" height="91" /></div>
+              </a>
+               <div class="clear"></div>
+          </div>
+          <div class="clear"></div>
+      </div>
+    </div>
+  <div class="headerCenter center1200" onkeydown="keySearch();">
+        <form id="artsear" onsubmit="return false">
+        <div class="logo"><a href="/"><img src="/static/images/logo.png" width="198" height="46" /></a></div>
+        <div class="search">
+        	<a href="http://en.sge.com.cn" class="englishBtn">International Business</a>
+            <div class="searchbBar">
+				<i><img src="/static/images/header_search.png"/></i>
+           		<input name="focus" id="search" type="text" placeholder="请输入关键字，搜栏目 / 行情资讯 / 公告 / 规则" class="sousou border_ea" onkeydown="if(event.keyCode==13){artsearch();}">
+            	<div class="searchBtn"  onclick="artsearch()">搜索</div>
+            </div>
+        </div>
+        </form>
+</div>
+    <div class="nav">
+          <div class="navList">
+               <ul>
+                 <li class=""><a href="/" target="_blank">首页</a>
+                 
+                 </li>
+                 <li class=""><a href="/jjsjs" target="_blank">关于上金所</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                        <a href="/jjsjs">交易所介绍</a>
+                       <a href="/jjsnotice" >公告</a>
+                        <a href="/ppzx" >品牌中心</a>
+                   	 	<a href="/gyjjs/dsj" >大事记</a>
+                        <a href="/bsld" >博士后工作站</a>
+                     	<a href="/gyjjs/gjjlyhz" >国际交流与合作</a>  
+                        <!-- <a href="/gyjjs/xxgk" >信息公开</a> -->
+                        <a href="/gyjjs/rczp" >人才招聘</a>
+                       <a href="/gyjjs/lxwm" >联系我们</a>   
+                     </div>
+                    <div class="clear"></div>
+                   </div>
+                 </div>
+                 </li>
+                 
+         		<!-- 新闻中心  开始-->
+                 <li>
+<!-- /NewCenter -->
+                 	<a href="/xwzx/esznzl" target="_blank">新闻中心</a> 
+				   	<div class="subnav"> 
+					    <div class="subnavCenter"> 
+						    <div class="content1">
+<a href="/xwzx/esznzl">聚焦二十大</a>
+		                      	<a href="/xwzx/NewsCenter_sge">交易所新闻</a>
+		                     	<a href="	/xwzx/newscenter_mtbd">媒体报道</a>
+		                        <a href="/xwzx/zyqwyx">战疫情 稳运行</a>
+	                   		</div> 
+			    	 	</div> 
+				     	<div class="clear"></div>
+				     </div> 
+			    </li>
+                 <!-- 新闻中心  结束-->
+                 <li><a href="/cpfw/Product_service" target="_blank">产品服务</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                         <a href="/cpfw/Product_service">竞价</a> 
+                      	 <a href="/cpfw/jypzlb">询价</a>
+                         <a href="/cpfw/cpdj">定价</a>
+                         <a href="/cpfw/zj">租借</a> 
+                         <a href="/cpfw/jsyz">清算与结算</a>
+                         <a href="/cpfw/bz">交割</a>
+                         <a href="/cpfw/gjb">国际板</a> 
+                         <a href="/cpfw/hjetf">黄金ETF</a>
+                     </div>
+                      <div class="clear"></div>
+                   </div>
+                   
+                 </div>
+                 </li>
+                 <li><a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27" target="_blank">数据资讯</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                      	 <a href="/sjzx/yshqbg">延时行情</a>
+						 <!--                          <a href="/sjzx/qxjj">远期价格曲线</a>       -->                    
+
+                         <a href="/sjzx/mrhq">行情走势</a> 
+
+                         <a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27">历史行情数据</a> 
+
+                         <a href="/sjzx/jzj">上海金基准价</a> 
+<a href="/sjzx/shyjzj">上海银基准价</a>
+						<!--                          <a href="/sjzx/shj">上海金专栏</a>  -->
+                         <a href="/sjzx/hqzb">行情周报</a>
+                         <a href="/sjzx/hqyb">行情月报</a>
+                         <a href="/sjzx/goldEtf?start_date=2026-02-27&end_date=2026-02-27">黄金ETF专栏</a>
+                         <a href="/sjzx/rzxxs">行情产品服务</a>
+                         <a href="/sjzx/xjscjgjz">询价市场价格基准</a>
+<!-- <a href="/sjzx/bzjxjsc">保证金询价市场数据</a> -->
+			<!-- <a href="/sjzx/zjjzll">黄金租借基准费率</a> -->
+                        <a href="/sjzx/hjzjckll">黄金租借参考费率</a>
+                         <a href="/sjzx/xjjg">现金交割专栏</a>
+                         <a href="/sjzx/hjzgtjsj">黄金资管统计数据</a>
+                   <a href="https://service.sge.com.cn:8443/financialinquiry/initAuth.htm">票据查验</a>
+                     </div>
+                      <div class="clear"></div>
+                   </div>
+                   
+                 </div>
+                 </li>
+                 <li><a href="/hyzq/xzzq" target="_blank">会员专区</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+<!--
+                 		  <a href="/login"><span>会员中心</span></a>
+-->
+                         <a href="/hyzq/mlycx">会员名录与查询</a>
+                         <a href="/hyzq/xzzq">下载专区</a>
+                          <a href="/hyzq/ems">发票EMS查询</a>
+                          <a href="/hyzq/jyy">水平考试成绩查询</a> 
+
+                          <a href="/hyzq/cyry">从业人员信息查询</a>
+                         <a href="http://sge.atacollege.cn/" target="_blank">从业人员培训入口</a>
+                         <a href="/hyzq/hyzc">会员之窗</a>
+                     </div>
+                 </div>
+                 </div>
+                 </li>
+                 <li><a href="/tzzjy/hjdjt" target="_blank">投资者服务</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                   <div class="content1">
+                         <a href="/tzzjy/hjdjt">黄金大讲堂</a>
+                         <a href="/tzzjy/sctg">市场合作与推广</a>
+                         <!-- <a href="/tzzjy/cjwt">交易指南</a> -->
+                         <a href="/tzzjy/gzyj">工作研究</a>
+                       <a href="/tzzjy/fxjyts">风险教育提示</a>
+                       <a href="/tzzjy/tjyd">投教园地</a>
+                  <!--     <a href="/tzzjy/yjt">易金通</a> -->
+                         <!-- <a href="/tzzjy/">发票EMS查询</a> -->
+                         <!--  <a href="/tzzjy/hjdjt">黄金大讲堂</a> -->
+                <!--         <a href="/tzzjy/kjxz">课件下载</a> -->
+                         <!--  <a href="javascript:;">财经日历</a>-->
+                         <!-- <a href="/tzzjy/spkc">视频课程</a>-->
+<a href="/tzzjy/sjsnb">上金所年报</a>
+                          <a href="/tzzjy/shzrbg">社会责任报告</a>
+
+                         <a href="/tzzjy/pfmi">PFMI</a>
+                     </div>
+                 </div>
+                 </div>
+                 </li>
+                 <li><a href="/guize/rule" target="_blank">制度与规则</a>
+                 <div class="subnav">
+                  <div class="subnavCenter">
+                     <div class="content1">
+                        <a href="/guize/rule">黄金市场相关政策</a>
+                        <a href="/guize/ywgz">业务规则</a>
+                        <a href="/guize/jj">竞价</a>
+                        <a href="/guize/rljysxj">询价</a>
+                        <a href="/guize/qs">清算与结算</a>
+                     	
+                        <a href="/guize/jg">交割</a>
+                     	
+                        <a href="/guize/dj">定价</a>
+                     	
+                     	<a href="/guize/fxqbg">反洗钱专栏</a>
+                     </div>
+                 </div>
+                 </div>
+                 </li>
+             </ul>
+          </div>
+    </div>
+</div>
+
+<!--header end--><script>
+    if (!window.location.href.split('?')[1]) {
+        const locationNow = window.location.href.split('?')[0];
+        const newLocationNow = locationNow + "?start_date=2026-02-27&end_date=2026-02-27";
+        window.location.assign(newLocationNow);
+    }
+    if (window.location.href.search(/\+/g) >= 0){
+        window.location.assign(window.location.href.replace(/\+/g,'%2B'))
+    }
+    function forceTwoDecimal(x){
+        if (x === '-') {
+            return '-';
+        }
+        var a = parseFloat(x);
+        if(isNaN(a)) {
+            return '';
+        }
+        var b = Math.round(x*100)/100;
+        var c = b.toString();
+        var d = c.indexOf('.');
+        if(d<0) {
+            d = c.length;
+            c += '.';
+        }
+        while (c.length <= d + 2) {
+            c += '0';
+        }
+        return c;
+    }
+    function format(number){
+        var res = number.toString().replace(/\d+/, function(num){
+            return num.replace(/\d{1,3}(?=(\d{3})+$)/g,function(newnum){
+                return newnum+",";
+            });
+        })
+        return res;
+    }
+</script>
+<!--新闻中心部分开始-->
+<div class="jzk_main">
+    <div class="jzk_newsCenter_Main">
+        <!--新闻中心标题开始-->
+<!--新闻中心标题开始--> 
+<!--新闻中心标题结束--> 
+        <!--新闻中心标题结束-->
+        <!--新闻中心内容开始-->
+        <div class="jzk_newsCenter_Cont">
+        <script type='text/javascript'> console.log('5') </script>
+<div class="leftColumnNav">
+            <div class="title">数据资讯</div>
+            <div class="btnList">
+            <ul>
+            <li class="">
+               <div class="item"><a href="/sjzx/yshqbg"><span>延时行情</span></a></div>
+               
+               </li> 
+               <li class="">
+               <div class="item"><a href="/sjzx/mrhq"><span>行情走势</span></a></div>
+               
+               </li>
+            
+               <li  class="current">
+              	  <div class="item itemcurrent"><a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27"><span>历史行情数据</span></a></div>
+                    <div class="subNav current" >
+                  <!--  <a href="/sjzx/mrhqsj_new" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a> -->
+                   <!-- <a href="/sjzx/mrhqsj" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a> -->
+                   <a href="/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27" class="current" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a>
+                  <!-- <a href="/sjzx/myhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每月行情</a> -->
+                   <!-- <a href="/sjzx/shjzjhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海金基准价行情</a>
+<a href="/sjzx/shyjzjhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海银基准价行情</a> -->
+<a href="/sjzx/shanghaiAuAuto?start_date=2026-02-27&end_date=2026-02-27" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海金基准价行情</a>
+<a href="/sjzx/shanghaiAgAuto?start_date=2026-02-27&end_date=2026-02-27" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>上海银基准价行情</a>
+                   </div>
+               </li>
+               
+                <li class="">
+               		<div class="item"><a href="/sjzx/jzj"><span>上海金基准价</span></a></div>             
+               </li>
+<li class="">
+               		<div class="item"><a href="/sjzx/shyjzj"><span>上海银基准价</span></a></div>
+               </li>
+               
+             <!--   <li  class=""       >
+              	  <div class="item "><a href="/sjzx/qxjj"><span>远期价格曲线</span></a></div>
+                 <div class="subNav " >
+                   <a href="/sjzx/qxjj" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线简介</a>
+                   <a href="/sjzx/yqjgqxbzfa" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线编制方案</a>
+                   <a href="/sjzx/qxcx" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线查询</a>
+                   </div>
+               </li> -->
+<!-- <li class="">
+                    <div class="item "><a href="/sjzx/bzjxjsc"><span>保证金询价市场数据</span></a></div>
+                    <div class="subNav " >
+                        <a href="/sjzx/jydbzhb" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>即远掉标准化标的结算价查询</a>
+                    </div>
+                </li> -->
+
+              <!--  <li>
+               		<div class="item"><a href="#"><span>贵金属价格指数</span></a></div>
+               </li> -->
+               
+               <li class="">
+              	    <div class="item"><a href="/sjzx/hqzb"><span>行情周报</span></a></div> 
+               </li>
+               
+              <li class="">
+	               <div class="item"><a href="/sjzx/hqyb"><span>行情月报</span></a></div>
+	               </li>
+	               <!-- <li class="">
+	               <div class="item"><a href="/sjzx/shj"><span>上海金专栏</span></a></div>  
+              </li>
+                -->
+              <!-- <li class="">
+              	 <div class="item"><a href="/sjzx/hjETF"><span>黄金ETF专栏</span></a></div>
+              </li> -->
+              
+              <li class="">
+                <div class="item"><a href="/sjzx/goldEtf?start_date=2026-02-27&end_date=2026-02-27"><span>黄金ETF专栏</span></a></div>
+           </li>
+           
+              <li class="">
+              	<div class="item"><a href="/sjzx/rzxxs"><span>行情产品服务</span></a></div>    
+              </li>
+
+                <li class="">
+                    <div class="item "><a href="/sjzx/xjscjgjz"><span>询价市场价格基准</span></a></div>
+                    <div class="subNav " >
+                        <!--  <a href="/sjzx/mrhqsj_new" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>每日行情</a> -->
+                        <a href="/sjzx/xjscjgjz" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>询价市场价格基准编制方案</a>
+                        <a href="/sjzx/qxcx" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线查询</a>
+                        <a href="/sjzx/goldoptionsqxcx" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>询价期权隐含波动率曲线查询</a>
+                        <!--<a href="/sjzx/myhq" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>远期价格曲线下载</a>-->
+                    </div>
+                </li>
+
+<!-- <li class="">
+                    <div class="item "><a href="/sjzx/zjjzll"><span>黄金租借基准费率</span></a></div>
+                    <div class="subNav " >
+                        <a href="/sjzx/zjjzll" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>数据查询</a>
+                        <a href="/sjzx/xgywbf" class="" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>报价服务</a>
+                        <a href="/sjzx/bjcy" class=" noBottom_border" ><i class="iconfont icon_arrow24 fl  color_9ed4ff"></i>数据下载</a>
+                    </div>
+                </li> -->
+					<li class="">
+                    <div class="item"><a href="/sjzx/hjzjckll"><span>黄金租借参考费率</span></a></div>
+                </li>
+                <li class="">
+                    <div class="item"><a href="/sjzx/xjjg"><span>现金交割专栏</span></a></div>
+                </li>
+               <li class="">
+                    <div class="item"><a href="/sjzx/hjzgtjsj"><span>黄金资管统计数据</span></a></div>
+                </li>
+
+            </ul>
+            </div>
+        </div>            <div class="jzk_newsCenter_ContRight">
+<div class="subpageTitle">
+<h2>每日行情</h2>
+     <div class="weizhi">
+         <span class="ts"><a href="/index"><i class="iconfont  fs16 mr5"></i>首页</a></span>
+         <span>></span>
+         <span><a href="/sjzx/yshqbg">数据资讯</a></span>
+         <span>></span>
+         <span><a href="/sjzx/mrhqsj">历史行情数据</a></span>
+         <span>></span>
+         <span><a href="/sjzx/quotation_daily_new">每日行情</a></span>
+     </div>
+ </div>
+                 <div style="height: 24px;"><p class="fr">注意：支持查询2024年1月1日后的数据，若要查询更早数据，请点击<a href="/sjzx/mrhqsj" style="display: inline;color: #1890ff;">历史数据查询</a></p></div>
+                <div class="searchBar">
+                    查询日期（开始）：<input
+                        id="startdate"
+                        class="fl searchDate"
+                        type="date"
+                        placeholder="查询日期（开始）"
+                        onclick="inputStartDateClick()"
+                        onchange=""
+                    />
+                    查询日期（结束）：<input
+                        id="enddate"
+                        class="fl searchDate"
+                        type="date"
+                        placeholder="查询日期（结束）"
+                        onclick="inputEndDateClick()"
+                        onchange=""
+                    />
+                    <div class="fl searchContract">
+                        <input
+                            type="text"
+                            name=""
+                            id="contracts"
+                            onclick="multiclick()"
+                            readonly="true"
+                            placeholder="合约代码"
+                        />
+                        <div
+                            id="selectdiv"
+                            style="
+                                display: none;
+                                border: 1px solid rgb(230, 230, 230);
+                                width: 100%;
+                                padding-left: 10px;
+                                z-index: 2;
+                                position: absolute;
+                                top: 27px;
+                                width: calc(100% - 10px);
+                                overflow-y: scroll;
+                                height: 100px;
+                                background-color: white;
+                                text-align: start;
+                            "
+                            onmouseover="mousein()"
+                            onmouseout="mouseout()"
+                        ></div>
+                    </div>
+                    <a
+                        class="fr mt10 download"
+                        href="javascript:;"
+                        onclick="downloadExcel()"
+                    >
+                        <span class="fl">下载</span>
+                    </a>
+                    <a
+                        href="javascript:;"
+                        class="fr mt10 searchDaily"
+                        onclick="dailySearch()"
+                        >查询</a
+                    >
+                </div>
+
+                <div class="table_header">上海黄金交易所每日交易行情</div>
+
+                <div>
+                    <table class="daily_new_table">
+                        <thead>
+                            <tr>
+                                <!-- <th style="width:30px">序号</th> -->
+                                <th style="width:80px">日期</th>
+                                <th style="width:80px">合约</th>
+                                <th>开盘价</th>
+                                <th>最高价</th>
+                                <th>最低价</th>
+                                <th>收盘价</th>
+                                <th>涨跌（元）</th>
+                                <th>涨跌幅</th>
+                                <th>加权平均价</th>
+                                <th style="width:65px">成交量（kg）</th>
+                                <th style="width:130px">成交金额（元）</th>
+                                <th style="width:75px">市场持仓（手）</th>
+                                <th style="width:40px">交收方向</th>
+                                <th style="width:40px">交收量（手）</th>
+                            </tr>
+                        </thead>
+                       
+                        <tbody>
+                            
+                            <tr>
+                                <!-- <td style="width:30px">1</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au99.95</td>
+                                <td>1130.00</td>
+                                <td>1145.00</td>
+                                <td>1130.00</td>
+                                <td>1138.44</td>
+                                <td>3.38</td>
+                                <td>0.30%</td>
+                                <td>1137.29</td>
+                                <td style="width:65px">18</td>
+                                <td style="width:130px">20471300</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">2</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au99.99</td>
+                                <td>1144.99</td>
+                                <td>1147.90</td>
+                                <td>1135.00</td>
+                                <td>1142.97</td>
+                                <td>-1.54</td>
+                                <td>-0.13%</td>
+                                <td>1144.92</td>
+                                <td style="width:65px">4762.58</td>
+                                <td style="width:130px">5452813276.4</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">3</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au100g</td>
+                                <td>1145.00</td>
+                                <td>1148.00</td>
+                                <td>1140.00</td>
+                                <td>1145.76</td>
+                                <td>2.67</td>
+                                <td>0.23%</td>
+                                <td>1145.55</td>
+                                <td style="width:65px">21.2</td>
+                                <td style="width:130px">24285670</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">4</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">iAu100g</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td></td>
+                                <td></td>
+                                <td>-</td>
+                                <td style="width:65px">0</td>
+                                <td style="width:130px">0</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">5</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">iAu99.5</td>
+                                <td>1145.60</td>
+                                <td>1145.60</td>
+                                <td>1145.60</td>
+                                <td>1145.60</td>
+                                <td>1.4</td>
+                                <td>0.12%</td>
+                                <td>1145.60</td>
+                                <td style="width:65px">25</td>
+                                <td style="width:130px">28640000</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">6</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">iAu99.99</td>
+                                <td>1139.61</td>
+                                <td>1145.99</td>
+                                <td>1138.00</td>
+                                <td>1143.37</td>
+                                <td>1.82</td>
+                                <td>0.16%</td>
+                                <td>1143.40</td>
+                                <td style="width:65px">942.46</td>
+                                <td style="width:130px">1077613883.6</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">7</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au(T+D)</td>
+                                <td>1139.01</td>
+                                <td>1147.29</td>
+                                <td>1134.14</td>
+                                <td>1142.48</td>
+                                <td>-2.12</td>
+                                <td>-0.19%</td>
+                                <td>1144.54</td>
+                                <td style="width:65px">38408</td>
+                                <td style="width:130px">43959718560</td>
+                                <td style="width:75px">235980</td>
+                                <td style="width:40px">多支付给空</td>
+                                <td style="width:40px">9250</td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">8</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au(T+N1)</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td></td>
+                                <td></td>
+                                <td>-</td>
+                                <td style="width:65px">0</td>
+                                <td style="width:130px">0</td>
+                                <td style="width:75px">336</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">9</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au(T+N2)</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td></td>
+                                <td></td>
+                                <td>-</td>
+                                <td style="width:65px">0</td>
+                                <td style="width:130px">0</td>
+                                <td style="width:75px">1590</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">10</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">mAu(T+D)</td>
+                                <td>1141.49</td>
+                                <td>1147.47</td>
+                                <td>1134.10</td>
+                                <td>1143.02</td>
+                                <td>-1.65</td>
+                                <td>-0.14%</td>
+                                <td>1145.06</td>
+                                <td style="width:65px">5515.2</td>
+                                <td style="width:130px">6315239722</td>
+                                <td style="width:75px">573030</td>
+                                <td style="width:40px">多支付给空</td>
+                                <td style="width:40px">65010</td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">11</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Pt99.95</td>
+                                <td>583.39</td>
+                                <td>611.43</td>
+                                <td>583.39</td>
+                                <td>609.99</td>
+                                <td>18.39</td>
+                                <td>3.11%</td>
+                                <td>596.15</td>
+                                <td style="width:65px">62</td>
+                                <td style="width:130px">36961500</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">12</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Ag(T+D)</td>
+                                <td>21280.00</td>
+                                <td>22418.00</td>
+                                <td>21015.00</td>
+                                <td>22369.00</td>
+                                <td>458</td>
+                                <td>2.09%</td>
+                                <td>22045.00</td>
+                                <td style="width:65px">498864</td>
+                                <td style="width:130px">10997898918</td>
+                                <td style="width:75px">2988126</td>
+                                <td style="width:40px">空支付给多</td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">13</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Ag99.99</td>
+                                <td>21804.00</td>
+                                <td>21804.00</td>
+                                <td>21804.00</td>
+                                <td>21804.00</td>
+                                <td>1982</td>
+                                <td>10.00%</td>
+                                <td>21804.00</td>
+                                <td style="width:65px">30</td>
+                                <td style="width:130px">654120</td>
+                                <td style="width:75px">2</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">14</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">Au99.5</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td></td>
+                                <td></td>
+                                <td>-</td>
+                                <td style="width:65px">0</td>
+                                <td style="width:130px">0</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">15</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">NYAuTN06</td>
+                                <td>1146.80</td>
+                                <td>1147.20</td>
+                                <td>1146.50</td>
+                                <td>1146.85</td>
+                                <td>0</td>
+                                <td>0.00%</td>
+                                <td>1146.85</td>
+                                <td style="width:65px">0.8</td>
+                                <td style="width:130px">917500</td>
+                                <td style="width:75px">7714</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">16</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">NYAuTN12</td>
+                                <td>1159.00</td>
+                                <td>1159.00</td>
+                                <td>1151.60</td>
+                                <td>1153.20</td>
+                                <td>2.4</td>
+                                <td>0.21%</td>
+                                <td>1155.85</td>
+                                <td style="width:65px">13.4</td>
+                                <td style="width:130px">15488590</td>
+                                <td style="width:75px">2870</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <!-- <td style="width:30px">17</td>  -->
+                                <td style="width:80px">2026-02-27</td>
+                                <td style="width:80px">PGC30g</td>
+                                <td>1150.00</td>
+                                <td>1150.00</td>
+                                <td>1150.00</td>
+                                <td>1150.00</td>
+                                <td>-2</td>
+                                <td>-0.17%</td>
+                                <td>1150.00</td>
+                                <td style="width:65px">0.12</td>
+                                <td style="width:130px">138000</td>
+                                <td style="width:75px">-</td>
+                                <td style="width:40px"></td>
+                                <td style="width:40px"></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                    
+<!-- 分页begin --> 
+<!-- 刷新页面分页 -->
+          <div class="pagination">
+             <div class="pagination_left fl ">
+<div class='btn border_ea' >上一页</div>                 <div class="paginationBar fl">
+                     <ul class="clear">
+<li class='border_ea noLeft_border current' onclick=gotoPage('/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27&inst_ids=&p=','1')>1</li>                  
+                     </ul>
+                 </div>
+<div class='btn border_ea noLeft_border'>下一页</div>                 
+                 <div class="clear"></div>
+             </div>
+            
+             <div class="pagination_right fr">
+  <span class='fl mr10'>跳转至</span><input id='tzpage1' value='1' type='text' class='gotoPageNum border_ea fl' /><div class='btn border_ea noLeft_border fl' onclick=skippage('/sjzx/quotation_daily_new?start_date=2026-02-27&end_date=2026-02-27&inst_ids=&p=','1') >确定</div>                 <div class="clear"></div>
+             </div>
+             <div class="clear"></div>
+         </div>
+         
+         <!-- 分页end --> 
+         <script>
+         var searchFrom = "";
+         function gotoPage(uri,page){
+        	 if(searchFrom==''){
+        		 window.location=uri+page;
+        	 }else{
+        		var param = $("#"+searchFrom).serialize();
+     			window.location=uri+page+"&"+encodeURI(encodeURI(param));
+        	 }
+     	}
+     	function skippage(uri,flag){
+     		var tzpage=$("#tzpage"+flag).val();
+     		var totalPage=1;
+//      		if(tzpage>totalPage){
+//      			alert('请输入正确的页码');
+//      			return;
+//      		}
+     		if(searchFrom==''){
+     			window.location=uri+tzpage;
+     		}else{
+     			var param = $("#"+searchFrom).serialize();
+     			window.location=uri+tzpage+"&"+encodeURI(encodeURI(param));
+     		}
+     	}
+</script>                 <!-- 分页end -->
+                <div><p>注：数据由上一个工作日的20:00至2:30和本工作日的9:00至15:30的交易形成(节假日无上一个工作日的20:00至2:30中的数据)。成交量和成交金额为双向计量(不含现货实盘大宗交易数据)</p></div>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <!--新闻中心内容结束-->
+    </div>
+    <!--新闻中心部分结束-->
+    <div class="errpop1">
+        <span>系统支持查询周期为1个月，<br>请重新选择查询日期</span>
+        <button onclick="close1()">关闭</button>
+    </div>
+
+    <div class="errpop2">
+        <span>系统无查询的数据，请重新查询</span>
+        <button onclick="close2()">关闭</button>
+    </div>
+
+    <div class="errpop3">
+        <span>结束日期早于开始日期，请重新选择！</span>
+        <button onclick="close3()">关闭</button>
+    </div>
+
+    <div class="errpop4">
+        <span>开始日期和结束日期必须完整</span>
+        <button onclick="close4()">关闭</button>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    var initlist = [];
+    // 初始化数据，/号分割value和选项名称
+    // var initlist = [
+    //     'Ag(T%2BD)/Ag(T+D)',
+    //     'Ag99.99/Ag99.99',
+    //     'Au(T%2BD)/Au(T+D)',
+    //     'Au(T%2BN1)/Au(T+N1)',
+    //     'Au(T%2BN2)/Au(T+N2)',
+    //     'Au100g/Au100g',
+    //     'Au99.5/Au99.5',
+    //     'Au99.95/Au99.95',
+    //     'Au99.99/Au99.99',
+    //     'NYAuTN06/NYAuTN06',
+    //     'NYAuTN12/NYAuTN12',
+    //     'PGC30g/PGC30g',
+    //     'Pt99.95/Pt99.95',
+    //     'iAu100g/iAu100g',
+    //     'iAu99.5/iAu99.5',
+    //     'iAu99.99/iAu99.99',
+    //     'mAu(T%2BD)/mAu(T+D)',
+    // ];
+    // var initlist = [
+    //     'Ag(T%2BD)/白银延期',
+    //     'Ag99.99/Ag99.99',
+    //     'Au(T%2BD)/黄金延期',
+    //     'Au(T%2BN1)/黄金单月延期',
+    //     'Au(T%2BN2)/黄金双月延期',
+    //     'Au100g/100克金条',
+    //     'Au99.5/Au995',
+    //     'Au99.95/Au9995',
+    //     'Au99.99/Au9999',
+    //     'NYAuTN06/沪纽金TN06',
+    //     'NYAuTN12/沪纽金TN12',
+    //     'PGC30g/熊猫金币30g',
+    //     'Pt99.95/Pt9995',
+    //     'iAu100g/iAu100g',
+    //     'iAu99.5/iAu995',
+    //     'iAu99.99/iAu9999',
+    //     'mAu(T%2BD)/Mini黄金延期',
+    // ];
+    // 设置map键值对
+    const contractMap = new Map();
+    // 获取dom元素
+    var selecteddiv = document.getElementById('selectdiv');
+    // 鼠标是否在输入框中，用于控制下拉框是否显示
+    var indiv = false;
+    // 传参所需的列表
+    var selectedlist = [];
+    // 显示所需的列表
+    var selectednamelist = [];
+    // 页面加载进行初始化操作
+    window.onload = function () {
+        $.ajax({
+            url: '/portal/marketAutomation/instQuery',
+            data: { inst_str: '' },
+            type: 'GET',
+            contentType: 'application/x-www-form-urlencoded',
+            scriptCharset: 'UTF-8',
+            success: function (data) {
+                //console.log(data);
+                const res = data.data;
+                //fundSelectRender(res);
+                for (var i = 0; i < res.length; i++) {
+                    initlist.push(res[i].name.replace(/\+/g,'%2B') + '/' + res[i].name)
+                }
+                // 更新本地存储数据避免出错
+                localStorage.setItem('startdate', document.getElementById('startdate').value);
+                localStorage.setItem('enddate', document.getElementById('enddate').value);
+                // 初始化多选下拉框
+                for (var i = 0; i < initlist.length; i++) {
+                    var tmpdiv = document.createElement('div');
+                    var tmpinput = document.createElement('input');
+                    tmpinput.setAttribute('name', 'mycheckbox');
+                    tmpinput.setAttribute('type', 'checkbox');
+                    tmpinput.setAttribute('onclick', 'mycheck(this)');
+                    tmpinput.setAttribute('style','vertical-align: middle')
+                    tmpinput.setAttribute(
+                        'value',
+                        initlist[i].substr(0, initlist[i].indexOf('/'))
+                    );
+                
+                    var tmptext = document.createTextNode(
+                        initlist[i].substr(
+                            initlist[i].indexOf('/') + 1,
+                            initlist[i].length
+                        )
+                    );
+                    tmpdiv.appendChild(tmpinput);
+                    tmpdiv.appendChild(tmptext);
+                    selecteddiv.appendChild(tmpdiv);
+                    contractMap.set(initlist[i].substr(0, initlist[i].indexOf('/')),initlist[i].substr(
+                            initlist[i].indexOf('/') + 1,
+                            initlist[i].length
+                        ))
+                }
+                // 点击时判断鼠标位置，控制下拉框显示与隐藏
+                document.onclick = function (event) {
+                    if (event.target.id == 'contracts' || indiv) {
+                        return;
+                    }
+                    selecteddiv.style.display = 'none';
+                };
+                // 正则表达式校验网页链接中的属性值进行获取
+                const contractRe1 = /(?<=inst_ids=).*?(?=&)/g;
+                const contractRe2 = /(?<=inst_ids=).*/g;
+                const contractTMP1 = searchParam.match(contractRe1);
+                const contractTMP2 = searchParam.match(contractRe2);
+                const contractVAR = contractTMP1 || contractTMP2;
+                // 若非空则在selectedlist和selectnamelist中填入该数据并将其显示在框中，达到记忆搜索参数值的效果
+                if (contractVAR) {
+                    const contractValue = contractVAR[0].replace(/\+/g,'%2B');
+                    const contractNotNull = contractValue.split(',').filter(function(s){
+                        return s && s.trim();
+                    })
+                    for (var i = 0;i < contractNotNull.length;i++){
+                        document.querySelector('input[value="'+contractNotNull[i]+'"]').checked=true;
+                        selectedlist[i] = contractNotNull[i];
+                        selectednamelist[i] = contractMap.get(contractNotNull[i]);
+                    }
+                    document.getElementById('contracts').value = selectednamelist;
+                }
+            },
+        });
+    //     // 更新本地存储数据避免出错
+    //     localStorage.setItem('startdate', document.getElementById('startdate').value);
+    //     localStorage.setItem('enddate', document.getElementById('enddate').value);
+    //     // 初始化多选下拉框
+    //     for (var i = 0; i < initlist.length; i++) {
+    //         var tmpdiv = document.createElement('div');
+    //         var tmpinput = document.createElement('input');
+    //         tmpinput.setAttribute('name', 'mycheckbox');
+    //         tmpinput.setAttribute('type', 'checkbox');
+    //         tmpinput.setAttribute('onclick', 'mycheck(this)');
+    //         tmpinput.setAttribute('style','vertical-align: middle')
+    //         tmpinput.setAttribute(
+    //             'value',
+    //             initlist[i].substr(0, initlist[i].indexOf('/'))
+    //         );
+
+    //         var tmptext = document.createTextNode(
+    //             initlist[i].substr(
+    //                 initlist[i].indexOf('/') + 1,
+    //                 initlist[i].length
+    //             )
+    //         );
+    //         tmpdiv.appendChild(tmpinput);
+    //         tmpdiv.appendChild(tmptext);
+    //         selecteddiv.appendChild(tmpdiv);
+    //         contractMap.set(initlist[i].substr(0, initlist[i].indexOf('/')),initlist[i].substr(
+    //                 initlist[i].indexOf('/') + 1,
+    //                 initlist[i].length
+    //             ))
+    //     }
+    //     // 点击时判断鼠标位置，控制下拉框显示与隐藏
+    //     document.onclick = function (event) {
+    //         if (event.target.id == 'contracts' || indiv) {
+    //             return;
+    //         }
+    //         selecteddiv.style.display = 'none';
+    //     };
+    //     // 正则表达式校验网页链接中的属性值进行获取
+    //     const contractRe1 = /(?<=inst_ids=).*?(?=&)/g;
+    //     const contractRe2 = /(?<=inst_ids=).*/g;
+    //     const contractTMP1 = searchParam.match(contractRe1);
+    //     const contractTMP2 = searchParam.match(contractRe2);
+    //     const contractVAR = contractTMP1 || contractTMP2;
+    //     // 若非空则在selectedlist和selectnamelist中填入该数据并将其显示在框中，达到记忆搜索参数值的效果
+    //     if (contractVAR) {
+    //         const contractValue = contractVAR[0].replace(/\+/g,'%2B');
+    //         const contractNotNull = contractValue.split(',').filter(function(s){
+    //             return s && s.trim();
+    //         })
+    //         for (var i = 0;i < contractNotNull.length;i++){
+    //             document.querySelector('input[value="'+contractNotNull[i]+'"]').checked=true;
+    //             selectedlist[i] = contractNotNull[i];
+    //             selectednamelist[i] = contractMap.get(contractNotNull[i]);
+    //         }
+    //         document.getElementById('contracts').value = selectednamelist;
+    // }
+    };
+    // 点击输入框本体时
+    function multiclick() {
+        selecteddiv.style.display = 'block';
+    }
+    function mousein() {
+        indiv = true;
+    }
+    function mouseout() {
+        indiv = false;
+    }
+    function mycheck(obj) {
+        if (obj.checked) {
+            selectedlist.push(obj.value);
+            selectednamelist.push(obj.nextSibling.nodeValue);
+        } else {
+            for (var i = 0; i < selectedlist.length; i++) {
+                if (selectedlist[i] == obj.value) {
+                    selectedlist.splice(i, 1);
+                    selectednamelist.splice(i, 1);
+                }
+            }
+        }
+        document.getElementById('contracts').value = selectednamelist;
+    }
+
+    const dateRe = /\d{4}-\d{2}-\d{2}/g;
+    // const contractRe1 = /(?<=inst_ids=).*?(?=&)/g;
+    // const contractRe2 = /(?<=inst_ids=).*/g;
+
+    const searchParam = window.location.href.split('?')[1];
+    const dateArray = searchParam.match(dateRe);
+    // const contractTMP1 = searchParam.match(contractRe1);
+    // const contractTMP2 = searchParam.match(contractRe2);
+    // const contractVAR = contractTMP1 || contractTMP2;
+
+    // if (contractVAR) {
+    //     setTimeout(function(){
+    //         const contractValue = contractVAR[0].replace(/\+/g,'%2B');
+    //         console.log(contractValue);
+    //         const contractNotNull = contractValue.split(',').filter(function(s){
+    //             return s && s.trim();
+    //         })
+    //         console.log(contractNotNull);
+    //         for (var i = 0;i < contractNotNull.length;i++){
+    //             selectednamelist[i] = contractMap.get(contractNotNull[i]);
+    //         }
+    //         document.getElementById('contracts').value = selectednamelist;
+    //     },0)
+    // }
+
+    // 未搜索出数据时弹框提示
+    if ($('.daily_new_table').find('tr').length === 1) {
+        // document.querySelector('.errpop2').style.display = 'flex';
+        setTimeout(() => {
+            alert('系统无查询的数据，请重新查询');
+        }, 200);
+    }
+    document.getElementById('startdate').value = dateArray[0];
+    document.getElementById('enddate').value = dateArray[1];
+    // const contractID = (localStorage.getItem("contract") === null) ? "" : localStorage.getItem("contract")
+    function downloadExcel() {
+        if ($('.daily_new_table').find('tr').length === 1) {
+            alert('禁止下载！');
+            return;
+        }
+        window.open(
+            '/portal/marketAutomation/downloadExcelForQuoteDailyNew?start_date=' +
+                dateArray[0] +
+                '&end_date=' +
+                dateArray[1] +
+                '&inst_ids=' +
+                selectedlist.toString().replace(/\+/g, '%2B')
+        );
+    }
+    // 日期选择时进行开始日期是否在结束日期之前的判断
+    function inputStartDateClick() {
+        localStorage.setItem('startdate', document.getElementById('startdate').value);
+    }
+    function inputEndDateClick() {
+        localStorage.setItem('enddate', document.getElementById('enddate').value);
+    }
+    function inputDateCheck() {
+        const start = document.getElementById('startdate').value;
+        const end = document.getElementById('enddate').value;
+        const rev = new Date(end).getTime() - new Date(start).getTime();
+        if (rev < 0) {
+            // document.querySelector('.errpop3').style.display = 'flex';
+            alert('结束日期早于开始日期，请重新选择！');
+            // document.getElementById('startdate').value = localStorage.getItem('startdate')
+            return
+        }
+        // localStorage.setItem('startdate', document.getElementById('startdate').value);
+    }
+    // function inputStartDateCheck() {
+    //     const start = document.getElementById('startdate').value;
+    //     const end = document.getElementById('enddate').value;
+    //     const rev = new Date(end).getTime() - new Date(start).getTime();
+    //     if (rev < 0) {
+    //         document.querySelector('.errpop3').style.display = 'flex';
+    //         document.getElementById('startdate').value = localStorage.getItem('startdate')
+    //         return
+    //     }
+    //     localStorage.setItem('startdate', document.getElementById('startdate').value);
+    // }
+    // function inputEndDateCheck() {
+    //     const start = document.getElementById('startdate').value;
+    //     const end = document.getElementById('enddate').value;
+    //     const rev = new Date(end).getTime() - new Date(start).getTime();
+    //     if (rev < 0) {
+    //         document.querySelector('.errpop3').style.display = 'flex';
+    //         document.getElementById('enddate').value = localStorage.getItem('enddate')
+    //         return
+    //     }
+    //     localStorage.setItem('enddate', document.getElementById('enddate').value);
+    // }
+    // 查询函数
+    function dailySearch() {
+        const location = window.location.href.split('?')[0];
+        const start = document.getElementById('startdate').value;
+        const end = document.getElementById('enddate').value;
+        if (!start || !end) {
+            // document.querySelector('.errpop4').style.display = 'flex';
+            alert('查询日期非法，请重新选择');
+            return;
+        }
+        const span =
+            (new Date(end).getTime() - new Date(start).getTime()) /
+            1000 /
+            60 /
+            60 /
+            24;
+        const rev = new Date(end).getTime() - new Date(start).getTime();
+        if (span > 31) {
+            // document.querySelector('.errpop1').style.display = 'flex';
+            alert('系统支持查询周期为1个月，请重新选择查询日期');
+            return;
+        } else if (rev < 0) {
+            // document.querySelector('.errpop3').style.display = 'flex';
+            alert('结束日期早于开始日期，请重新选择！');
+            return;
+        }
+        const contract = selectedlist.toString().replace(/\+/g, '%2B');
+        // localStorage.setItem("start", start)
+        // localStorage.setItem("end", end)
+        //console.log(location);
+        //console.log(start, end, contract);
+        const newlocation =
+            location +
+            '?start_date=' +
+            start +
+            '&end_date=' +
+            end +
+            '&inst_ids=' +
+            contract;
+        //console.log(newlocation);
+        window.location.assign(newlocation);
+    }
+    // 三个弹框的关闭函数
+    function close1() {
+        document.querySelector('.errpop1').style.display = 'none';
+    }
+    function close2() {
+        document.querySelector('.errpop2').style.display = 'none';
+    }
+    function close3() {
+        document.querySelector('.errpop3').style.display = 'none';
+    }
+    function close4() {
+        document.querySelector('.errpop4').style.display = 'none';
+    }
+    const tableContent = document.getElementsByTagName('tr');
+    for(let i = 1;i < tableContent.length;i++){
+        tableContent[i].children[2].innerHTML = format(forceTwoDecimal(tableContent[i].children[2].innerHTML));
+        tableContent[i].children[3].innerHTML = format(forceTwoDecimal(tableContent[i].children[3].innerHTML));
+        tableContent[i].children[4].innerHTML = format(forceTwoDecimal(tableContent[i].children[4].innerHTML));
+        tableContent[i].children[5].innerHTML = format(forceTwoDecimal(tableContent[i].children[5].innerHTML));
+        tableContent[i].children[6].innerHTML = format(forceTwoDecimal(tableContent[i].children[6].innerHTML));
+        tableContent[i].children[8].innerHTML = format(forceTwoDecimal(tableContent[i].children[8].innerHTML));
+        tableContent[i].children[9].innerHTML = format(forceTwoDecimal(tableContent[i].children[9].innerHTML));
+        tableContent[i].children[10].innerHTML = format(forceTwoDecimal(tableContent[i].children[10].innerHTML));
+        tableContent[i].children[11].innerHTML = format(tableContent[i].children[11].innerHTML);
+        tableContent[i].children[13].innerHTML = format(tableContent[i].children[13].innerHTML);
+    }
+</script>
+
+<style>
+    .searchBar {
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        height: 66px;
+        line-height: 66px;
+    }
+    .searchDaily,
+    .download {
+        margin: 20px 0 20px 20px;
+        padding: 0 20px;
+        display: inline-block;
+        height: 26px;
+        line-height: 26px;
+        border: 1px solid rgb(230, 230, 230);
+        background-color: #ffffff;
+        color: #333333;
+        border-radius: 2px;
+    }
+    .searchDaily:hover,
+    .download:hover {
+        background-color: #ececec;
+    }
+    .searchDate {
+        margin: 20px 20px 20px 0;
+        padding: 0 20px;
+        display: inline-block;
+        text-align: center;
+        height: 26px;
+        border: 1px solid rgb(230, 230, 230);
+        border-radius: 2px;
+    }
+    #contracts {
+        width: calc(100% - 20px);
+        height: 26px;
+        border: 1px solid rgb(230, 230, 230);
+        border-radius: 2px;
+        padding: 0 10px;
+    }
+    .searchContract {
+        flex: 1;
+        margin: 20px 0;
+        padding: 0 0;
+        display: inline-block;
+        height: 28px;
+        text-align: center;
+        position: relative;
+        line-height: 20px;
+        /* border: 1px solid rgb(230, 230, 230);
+        border-radius: 2px; */
+    }
+    
+    .table_header {
+        text-align: center;
+        line-height: 30px;
+        margin-top: -10px;
+        margin-bottom: 10px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .daily_new_table {
+        display: inline-block;
+        width: 100%;
+        border-spacing: 0px;
+        border-collapse: collapse;
+        /* border: 1px solid black; */
+    }
+    .daily_new_table th,
+    .daily_new_table td {
+        height: 25px;
+        text-align: center;
+        border: 1px solid rgb(230, 230, 230);
+    }
+    .daily_new_table thead {
+        color: rgb(0, 0, 0);
+        line-height: 15px;
+        background-color: #f5f5f5;
+    }
+    .daily_new_table tbody {
+        display: inline;
+        /* width: calc(100% +8px); */
+        height: 440px;
+        overflow-x: scroll !important;
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .daily_new_table thead tr,
+    .daily_new_table tbody tr {
+        box-sizing: border-box;
+        table-layout: fixed;
+        display: table;
+        width: 100%;
+    }
+    .daily_new_table tbody tr:hover {
+        background-color: #f3f3f3;
+    }
+    .daily_new_table tbody tr td {
+        line-height: 15px;
+        border-top: none;
+        word-break: break-all;
+    }
+    .errpop1 {
+        width: 400px;
+        height: 200px;
+        position: absolute;
+        top: calc(50vh - 100px);
+        left: calc(50vw - 200px);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+        background-color: white;
+        font-size: 16px;
+        box-shadow: 0px 0px 10px 5px #eee;
+        
+    }
+    .errpop1 span {
+        text-align: center;
+        margin: 50px 20px 30px 20px;
+    }
+    .errpop1 button {
+        width: 60px;
+        height: 30px;
+        font-size: 14px;
+        background-color: #fff;
+        border: 1px solid #eaeaea;
+        cursor: pointer;
+    }
+    .errpop1 button:hover {
+        background-color: #ececec;
+    }
+    .errpop2 {
+        width: 400px;
+        height: 200px;
+        position: absolute;
+        top: calc(50vh - 100px);
+        left: calc(50vw - 200px);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+        background-color: white;
+        font-size: 16px;
+        box-shadow: 0px 0px 10px 5px #eee;
+    }
+    .errpop2 span {
+        text-align: center;
+        margin: 50px 20px;
+    }
+    .errpop2 button {
+        width: 60px;
+        height: 30px;
+        font-size: 14px;
+        background-color: #fff;
+        border: 1px solid #eaeaea;
+        cursor: pointer;
+    }
+    .errpop2 button:hover {
+        background-color: #ececec;
+    }
+    .errpop3 {
+        width: 400px;
+        height: 200px;
+        position: absolute;
+        top: calc(50vh - 100px);
+        left: calc(50vw - 200px);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+        background-color: white;
+        font-size: 16px;
+        box-shadow: 0px 0px 10px 5px #eee;
+    }
+    .errpop3 span {
+        text-align: center;
+        margin: 50px 20px;
+    }
+    .errpop3 button {
+        width: 60px;
+        height: 30px;
+        font-size: 14px;
+        background-color: #fff;
+        border: 1px solid #eaeaea;
+        cursor: pointer;
+    }
+    .errpop3 button:hover {
+        background-color: #ececec;
+    }
+    .errpop4 {
+        width: 400px;
+        height: 200px;
+        position: absolute;
+        top: calc(50vh - 100px);
+        left: calc(50vw - 200px);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        align-content: center;
+        background-color: white;
+        font-size: 16px;
+        box-shadow: 0px 0px 10px 5px #eee;
+    }
+    .errpop4 span {
+        text-align: center;
+        margin: 50px 20px;
+    }
+    .errpop4 button {
+        width: 60px;
+        height: 30px;
+        font-size: 14px;
+        background-color: #fff;
+        border: 1px solid #eaeaea;
+        cursor: pointer;
+    }
+    .errpop4 button:hover {
+        background-color: #ececec;
+    }
+</style>
+<style>
+.quikeBtns li{ cursor:pointer;}
+</style>
+<div class="footer">
+<div class="footQuike">	
+    <div class="quikeBtns">
+        <ul>
+          <li onclick="javascript:window.location='/hydwzl';"  style="width:400px;" >
+              <h2>会员单位专栏</h2>
+              <p>The member zone</p>
+          </li>
+          <li onclick="javascript:window.location='/zlhzhb';" style="width:400px;"  >
+              <h2>战略合作伙伴</h2>
+              <p>strategy partner</p>
+          </li>
+          <!--<li onclick="javascript:window.location='/scpxjg';"/>
+              <h2>市场培训机构</h2>
+              <p>Trading center</p>
+          </li>-->
+          <li onclick="javascript:window.location='/yqlj';" style="width:400px;"  >
+              <h2>友情链接</h2>
+              <p>links</p>
+          </li>
+        </ul>
+    </div>
+    <div class="quikeCont">
+        <div class="sitemap fl">
+            <ul class="clear">
+        <!--      <li>
+               <h2>快速导航</h2>
+                 <a href="javascript:;">申请开户</a>
+                 <a href="/hyzq/xzzq">下载专区</a>
+             </li> -->
+             <li>
+                 <h2>关于上金所</h2>
+                 <a href="/jjsnotice">上金所公告</a>
+                 <a href="/jjsjs">上金所介绍</a>
+<!--                  <a href="javascript:;">上金所章程</a> -->
+            </li>
+            <li>
+               <h2>数据资讯</h2>
+                 <a href="/sjzx/hqzb">行情周报</a>
+                 <a href="/sjzx/hqyb">行情月报</a>
+                 <a href="/sjzx/jzj">上海金基准价</a> 
+             </li> 
+             <li>
+                 <h2>会员服务</h2>
+<!--
+                 	<a href="/login"><span>会员公告</span></a>
+-->                  
+                  <!--   -->                  	<!--未登录状态 -->
+                 	<!--<a href="/static/upload/file/28802.pdf" target="_blank"><span>会员管理办法</span></a>
+                  -->
+<!--
+                 	<a href="/login"><span>会员资讯</span></a>
+-->
+
+                  <a href="/hyzq/mlycx">会员名录与查询</a>
+                  <a href="/hyzq/xzzq">下载专区</a>
+             </li>
+             <li>
+                 <h2>其他</h2>
+                 <a href="/tzzjy/tzzfu/jyzn">交易指南</a>
+                 <a href="/cpfw/bz">质量标准</a>
+
+                <!--  <a href="#">应急管理</a> -->
+             </li>
+             
+            </ul>
+        </div>
+        <div class="contactInfor fl">
+             <p><a href="https://www.sge.com.cn/xwzx/NewsCenter_sge/5145290" target="_blank">
+               <img alt="上海市优秀网站" src="/static/images/index/excellentWebsite.png" width="182px" height="43px"></a></p>
+            <p>地址：上海市黄浦区中山南路699号</p>              <p>电话：<a href='tel://021-33189588'>021-33189588</a></p>              <p>传真：021-33662058</p>              <!--p>邮箱：sge@sge.com.cn</p-->      
+        </div>
+
+<div class="weixin fl">
+        <img src="/static/images/footerWx.png" width="82" height="82" />
+        <p>交易所微信</p>
+        </div>
+         <!-- <div class="yjt fr">
+        <img src="/static/images/footerAPP.png" width="82" height="82" />
+        <p>易金通</p>
+        </div>-->
+        <div class="clear"></div>
+    </div>
+</div>
+<div class="footCopyright center1200">
+    <div class="txt fl">
+    <p> Copyright 2016 上海黄金交易所 All Right Reserved </p>
+    <p>  </p>
+    </div>
+   <div class="right fr">
+<span style="margin-right:20px; float:left;">本网站支持IPV6</span>
+   		 		<a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31010102002879" class="fl ba">沪公网安备 31010102002879号</p></a>
+		 	
+             <a class="icp fr ml20" href="https://beian.miit.gov.cn/">沪ICP备11050182号-1</a>
+    </div>
+    <div class="clear"></div>
+</div>
+
+</div>    </body>
+</html>

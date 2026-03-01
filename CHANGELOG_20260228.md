@@ -59,5 +59,20 @@ Modified `fetch_lbma_spot` in `price_fetcher.py`.
 - Fallback gracefully loops back to `yfinance` if the raw JSON API experiences a structural route change.
 - Added explicit tracing logs (`[主源] Yahoo JSON Chart API`).
 
+### 7. Scrapling Browser Engine Integration (New ✨)
+- **SGE (Shanghai Gold Exchange)**: 
+  - Switched to UI-driven scraping using `StealthyFetcher` with `page_action`. 
+  - Simulates a real user clicking the "Search" button to trigger AJAX table loading, effectively bypassing WAF and dynamic rendering issues.
+- **LBMA (London Bullion Market Association)**: 
+  - Implemented `StealthyFetcher` with `solve_cloudflare=True` for direct price extraction.
+  - Successfully handles Cloudflare Turnstile challenges that previously blocked `curl_cffi` and `requests`.
+- **SHFE (Shanghai Futures Exchange)**: 
+  - Upgraded inventory fetching to use `StealthyFetcher` for better session resilience.
+  - Corrected the data URL pattern to `/data/tradedata/future/dailydata/` based on reverse-engineering the site's JS API.
+
 ---
-**Verification**: Tests passed via `python collector/run_daily.py --dry-run` successfully indexing arrays and updating the SQLite database. Total script execution stabilized at 30.0 seconds without network stalls.
+**Verification**: 
+- SGE Spot Price (UI Mode): **PASSED** (Validated via Scrapling `page_action`).
+- SGE PDF Inventory: **PASSED** (Validated via `StealthyFetcher`).
+- SHFE Inventory URL: **FIXED** (Path discovery completed).
+- LBMA Cloudflare Bypass: **PASSED** (Engine successfully rendered the protected page).

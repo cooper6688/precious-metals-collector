@@ -7,15 +7,16 @@
 - LBMA:  伦敦金库月度 XLSX 文件
 """
 import io
+import json
 import logging
 import re
-import time
 import time
 from datetime import datetime, timedelta
 from typing import Any
 
 import pandas as pd
 import requests
+from scrapling import Fetcher, StealthyFetcher
 
 from collector.database import DatabaseManager
 from collector.settings import PROXIES, USE_PROXY
@@ -265,51 +266,54 @@ class InventoryFetcher:
     def fetch_shfe(self, date: str | None = None) -> list[dict[str, Any]]:
         """
         从上期所 JSON API 获取仓单数据。
-        增加回溯机制，如果当天未发布（如周末或节假日返回 404），则向前尝试最多 5 天。
+        增加回溯机制，如果当天未发布（如周末或节假日返回 404），则向前尝试最多 7 天。
         使用 curl_cffi 伪装浏览器 TLS 指纹以绕过反爬虫。
         """
         records: list[dict[str, Any]] = []
-        try:
-            from curl_cffi import requests as cffi_requests
-        except ImportError:
-            logger.error("缺少 curl_cffi 库，无法抓取 SHFE")
-            return records
+        fetcher = Fetcher()
             
         target_dt = datetime.strptime(date, "%Y%m%d") if date else datetime.now()
         
-        # 尝试最多 5 天
-        for offset in range(5):
+        # 尝试最多 7 天 (涵盖长假)
+        for offset in range(7):
             curr_dt = target_dt - timedelta(days=offset)
             date_str = curr_dt.strftime("%Y%m%d")
             date_fmt = curr_dt.strftime("%Y-%m-%d")
-            url = f"https://www.shfe.com.cn/data/dailydata/kx/pm{date_str}.dat"
-
+            # 使用浏览器引擎处理潜伏的重定向和安全检查
+            # 根据最新调研，SHFE 数据路径已变更为 /data/tradedata/future/dailydata/
+            url = f"https://www.shfe.com.cn/data/tradedata/future/dailydata/pm{date_str}.dat"
+            logger.info("尝试从 SHFE 抓取仓单数据 (Scrapling): %s", url)
+            
+            fetcher = StealthyFetcher(headless=True)
+            resp = fetcher.fetch(url, timeout=15000)
+            
             try:
-                # 伪装完整的 Headers
-                headers = {
-                    "User-Agent": _UA,
-                    "Accept": "application/json, text/javascript, */*; q=0.01",
-                    "Referer": "https://www.shfe.com.cn/",
-                    "Connection": "keep-alive"
-                }
+                # Original headers are not needed if StealthyFetcher handles them
+                # headers = {
+                #     "User-Agent": _UA,
+                #     "Accept": "application/json, text/javascript, */*; q=0.01",
+                #     "Referer": "https://www.shfe.com.cn/",
+                #     "Connection": "keep-alive"
+                # }
                 
-                # 使用 chrome110 伪装，绕过 TLS 握手拦截
-                resp = cffi_requests.get(
-                    url, 
-                    headers=headers, 
-                    impersonate="chrome110", 
-                    timeout=15,
-                    proxies={"http": None, "https": None} # 国内不使用代理
-                )
-                resp.raise_for_status()
-                data = resp.json()
+                # 使用 scrapling StealthyFetcher 自动处理指纹和绕过
+                resp = StealthyFetcher.fetch(url, timeout=15000, headless=True)
+                
+                if resp.status == 404:
+                    logger.debug("SHFE pm%s.dat 报 404 (无数据/非交易日)，尝试回退...", date_str)
+                    continue
+                
+                if resp.status != 200:
+                    continue
+                
+                try:
+                    data = json.loads(resp.text)
+                except Exception:
+                    logger.error("SHFE JSON 解析失败: %s", resp.text[:100])
+                    continue
 
-                # 遍历 o_cursor
                 for item in data.get("o_cursor", []):
                     var_name = str(item.get("VARNAME", "")).strip().upper()
-
-                    # 只关心黄金(AU)和白银(AG)
-                    metal_val = None
                     if "AU" in var_name:
                         metal_val = "gold"
                     elif "AG" in var_name:
@@ -317,12 +321,10 @@ class InventoryFetcher:
                     else:
                         continue
 
-                    # 仓库名
                     warehouse = str(item.get("REGNAME", "")).strip()
                     if not warehouse or warehouse == "nan":
                         warehouse = str(item.get("WHABBRNAME", "")).strip()
 
-                    # 重量与单位
                     weight_str = str(item.get("WRTWGHTS", "0")).strip()
                     try:
                         weight = float(weight_str.replace(",", ""))
@@ -347,18 +349,14 @@ class InventoryFetcher:
                     logger.info("SHFE 获取 %d 条仓单记录 (回溯 %d 天，日期: %s)", len(records), offset, date_fmt)
                     return records
                 else:
-                    logger.warning("SHFE %s 数据解析为空，可能非主力交割，继续尝试...", date_fmt)
+                    logger.warning("SHFE %s 数据解析为空，继续尝试...", date_fmt)
 
             except Exception as e:
-                # 检查是否是 404 (curl_cffi_requests 的 Exception 需要检查 status_code)
-                if hasattr(e, 'response') and getattr(e, 'response') is not None and e.response.status_code == 404:
-                    logger.debug("SHFE 仓单数据不存在 (日期: %s, 尝试上一交易日)", date_fmt)
-                else:
-                    logger.warning("SHFE %s 仓单抓取失败: %s", date_fmt, e)
+                logger.warning("SHFE %s 仓单抓取异常: %s", date_fmt, e)
                 
-            time.sleep(1) # 避免请求过快
+            time.sleep(0.5)
             
-        logger.warning("SHFE 回溯 5 天仍未获取到仓单数据")
+        logger.warning("SHFE 回溯 7 天仍未获取到仓单数据")
         return records
 
     # ============================================================
@@ -380,84 +378,10 @@ class InventoryFetcher:
             库存记录列表。
         """
         records: list[dict[str, Any]] = []
-        now = datetime.now()
-
-        if year is None or month is None:
-            # LBMA 数据通常有 1 个月延迟，取上个月
-            if now.month == 1:
-                year = now.year - 1
-                month = 12
-            else:
-                year = now.year
-                month = now.month - 1
-
-        month_names = [
-            "", "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December",
-        ]
-        month_name = month_names[month]
-
-        url = (
-            f"https://cdn.lbma.org.uk/downloads/"
-            f"LBMA-London-Vault-Holdings-Data-{month_name}-{year}.xlsx"
-        )
-        try:
-            logger.info("LBMA: 下载 %s", url)
-            resp = self.session.get(url, timeout=30)
-            resp.raise_for_status()
-
-            df = pd.read_excel(io.BytesIO(resp.content), header=None)
-            logger.info("LBMA 原始行数: %d, 列数: %d", len(df), len(df.columns))
-
-            # 解析：从第 3 行（索引 2）开始，找 YYYY-MM 格式的日期列
-            for idx in range(2, len(df)):
-                month_end = str(df.iloc[idx, 0]).strip()
-                if not re.match(r"\d{4}-\d{2}", month_end):
-                    continue
-
-                # Gold = 列 1, Silver = 列 2（千盎司）
-                gold_koz = self._safe_float_val(df.iloc[idx, 1])
-                silver_koz = self._safe_float_val(df.iloc[idx, 2])
-
-                if gold_koz is not None and gold_koz > 0:
-                    gold_ton = (gold_koz * 1000) / OUNCE_TO_TON
-                    records.append({
-                        "date": month_end,
-                        "exchange": "LBMA",
-                        "metal": "gold",
-                        "category": "vault_total",
-                        "warehouse": "London Vaults",
-                        "inventory": round(gold_ton, 2),
-                        "unit": "ton",
-                        "source": "lbma_xlsx",
-                    })
-                if silver_koz is not None and silver_koz > 0:
-                    silver_ton = (silver_koz * 1000) / OUNCE_TO_TON
-                    records.append({
-                        "date": month_end,
-                        "exchange": "LBMA",
-                        "metal": "silver",
-                        "category": "vault_total",
-                        "warehouse": "London Vaults",
-                        "inventory": round(silver_ton, 2),
-                        "unit": "ton",
-                        "source": "lbma_xlsx",
-                    })
-
-            # 只取最新 2 条月份数据（避免写入过多历史）
-            if len(records) > 4:
-                records = records[:4]
-
-            logger.info("LBMA 获取 %d 条金库记录", len(records))
-
-        except requests.exceptions.HTTPError as e:
-            if e.response is not None and e.response.status_code == 404:
-                logger.warning("LBMA %d-%02d 数据不存在（可能尚未发布）", year, month)
-            else:
-                logger.exception("LBMA 金库数据抓取失败")
-        except Exception:
-            logger.exception("LBMA 金库数据抓取失败")
-        return records
+        # TODO: LBMA CDN has strengthened protection against bot downloads (even with StealthyFetcher/curl_cffi).
+        # Temporarily disabling this to prevent pipeline failure until a new bypass or storage mirror is found.
+        logger.warning("LBMA 金库 XLSX 下载暂时关闭（因 CDN 403 封锁）")
+        return []
 
     # ============================================================
     # SGE —— 上海金交所 PDF
@@ -465,131 +389,85 @@ class InventoryFetcher:
 
     def fetch_sge_pdf(self, date: str | None = None) -> list[dict[str, Any]]:
         """
-        通过爬取上海金交所官网获取每日交割 PDF。
-        增加了基于 curl_cffi 的反爬虫绕过，并优化了重试和降级策略。
+        从上海金交所 JSON API 直接提取 PDF 链接，绕过 Vue 动态渲染问题。
         """
         records: list[dict[str, Any]] = []
 
-        try:
-            from curl_cffi import requests as cffi_requests
-            from bs4 import BeautifulSoup
-            import pdfplumber
-            import os
-            import tempfile
-        except ImportError:
-            logger.error("缺少 curl_cffi, pdfplumber 或 bs4 库，无法抓取 SGE")
-            return records
+        records: list[dict[str, Any]] = []
+        fetcher = Fetcher()
+        import os
+        import tempfile
             
-        target_dt = datetime.strptime(date, "%Y%m%d") if date else datetime.now()
-        base_url = "https://www.sge.com.cn"
-        hub_url = f"{base_url}/sjzx/mrhq"
-
-        # 尝试使用 curl_cffi 获取 HTML 绕过 WAF
+        # SGE 文章列表 API (menuId=1738 为每日行情)
+        api_url = "https://www.sge.com.cn/public/front/findArticleExtList?pageNo=1&pageSize=15&menuId=1738"
         headers = {
             "User-Agent": _UA,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "Connection": "keep-alive"
+            "Accept": "application/json, text/plain, */*",
+            "Referer": "https://www.sge.com.cn/sjzx/mrhq"
         }
         
-        pdf_url = None
-        matched_date = None
-
-        logger.debug("请求 SGE 官网: %s", hub_url)
-        for offset in range(5): # 回溯 5 天
-            curr_dt = target_dt - timedelta(days=offset)
-            date_fmt = curr_dt.strftime("%Y-%m-%d")
-
-            try:
-                # 使用 cffi bypassing WAFF
-                resp = cffi_requests.get(
-                    hub_url, 
-                    headers=headers, 
-                    impersonate="chrome110", 
-                    timeout=15,
-                    proxies={"http": None, "https": None} # 国内不使用代理
-                )
-                resp.raise_for_status()
-                
-                # 如果页面仍然被 WAF 拦截 (例如返回带 script 挑战的页面)
-                if "您的访问请求可能对网站造成安全威胁" in resp.text or "<script>" in resp.text[:500] and "location=" in resp.text:
-                   logger.warning("SGE 官网触发高级 WAF 防御，curl_cffi 无法直接获取页面。")
-                   break
-                   
-                soup = BeautifulSoup(resp.text, 'html.parser')
-
-                # 解析页面中所有 <a> 标签
-                for a_tag in soup.find_all('a'):
-                    text = a_tag.get_text().strip()
-                    href = a_tag.get('href', '')
-                    
-                    # 匹配日期
-                    if date_fmt in text or curr_dt.strftime("%Y年%m月%d日") in text or date_fmt.replace("-", "") in text:
-                       # 只要匹配日期和相关字眼即可，因为 SGE 具体标题老变
-                       if "交割" in text or "交收" in text or "行情" in text:
-                            if href:
-                                pdf_url = base_url + href if href.startswith('/') else href
-                                matched_date = date_fmt
-                                logger.info("找到 SGE 疑似 PDF/详情页 链接 (日期 %s): %s -> %s", date_fmt, text, pdf_url)
-                                break
-                                
-                if pdf_url:
-                    break
-                else:
-                    logger.debug("SGE 官网未找到交割 PDF (尝试前一日: %s)", date_fmt)
-
-            except Exception as e:
-                logger.warning("请求 SGE 官网失败: %s", e)
-                
-            time.sleep(1) # 防封禁
-
-        if not pdf_url:
-            logger.warning("未找到匹配 %s 及前 5 天的 SGE 交割文件", target_dt.strftime("%Y-%m-%d"))
-            return records
-
-        # 若找到公告页，尝试从中提取真实 PDF 文件链接
         try:
-            if not pdf_url.endswith(".pdf"):
-                resp = cffi_requests.get(
-                    pdf_url, 
-                    headers=headers, 
-                    impersonate="chrome110", 
-                    timeout=15, 
-                    proxies={"http": None, "https": None}
-                )
-                resp.raise_for_status()
-                soup = BeautifulSoup(resp.text, 'html.parser')
-                
-                real_pdf_url = None
-                for a_tag in soup.find_all('a'):
-                    href = a_tag.get('href', '')
-                    if href.lower().endswith('.pdf'):
-                        real_pdf_url = base_url + href if href.startswith('/') else href
-                        break
-                        
-                if real_pdf_url:
-                    pdf_url = real_pdf_url
-            
-            logger.info("准备下载 SGE PDF: %s", pdf_url)
-            # 下载 PDF
-            pdf_resp = cffi_requests.get(
-                pdf_url, 
-                headers=headers, 
-                impersonate="chrome110", 
-                timeout=30, 
-                proxies={"http": None, "https": None}
+            logger.debug("请求 SGE JSON API: %s", api_url)
+            resp = StealthyFetcher.fetch(
+                api_url, 
+                timeout=15000,
+                headless=True
             )
-            pdf_resp.raise_for_status()
+            if resp.status != 200:
+                logger.warning("SGE JSON API 返回错误状态码: %s", resp.status)
+                return records
+                
+            try:
+                data = json.loads(resp.text)
+            except Exception:
+                logger.error("SGE JSON 解析失败: %s", resp.text[:100])
+                return records
+            
+            articles = data.get("list", [])
+            if not articles:
+                logger.warning("SGE JSON API 未返回文章列表")
+                return records
 
+            # 寻找最新的“交割”或“交收”类文章
+            target_article = None
+            for item in articles:
+                title = item.get("title", "")
+                if "交割" in title or "交收" in title or "行情" in title:
+                    target_article = item
+                    break
+            
+            if not target_article:
+                logger.warning("SGE JSON 列表内未找到交割相关报告")
+                return records
+
+            pdf_path_relative = target_article.get("fileUrl")
+            if not pdf_path_relative:
+                logger.warning("SGE 文章 '%s' 缺少 PDF 链接", target_article.get("title"))
+                return records
+
+            pdf_url = "https://www.sge.com.cn" + pdf_path_relative
+            publish_date = target_article.get("publishDate", "").split(" ")[0]
+            
+            logger.info("准备下载 SGE PDF: %s (发布日期: %s)", pdf_url, publish_date)
+            
+            pdf_resp = StealthyFetcher.fetch(
+                pdf_url, 
+                timeout=30000,
+                headless=True
+            )
+            if pdf_resp.status != 200:
+                logger.error("SGE PDF 下载失败: %s", pdf_resp.status)
+                return records
+            
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                tmp.write(pdf_resp.content)
+                tmp.write(pdf_resp.body)
                 tmp_path = tmp.name
 
-            records = self._parse_sge_pdf(tmp_path, date_str=matched_date)
+            records = self._parse_sge_pdf(tmp_path, date_str=publish_date)
             os.remove(tmp_path)
 
         except Exception:
-            logger.exception("SGE PDF 下载或解析失败")
+            logger.exception("SGE JSON 数据抓取或 PDF 解析失败")
 
         return records
 
