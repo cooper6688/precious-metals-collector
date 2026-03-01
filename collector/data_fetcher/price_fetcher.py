@@ -197,27 +197,35 @@ class PriceFetcher:
 
     def fetch_lbma_spot(self, days: int = 5) -> list[dict[str, Any]]:
         """
-        通过 yfinance (或直接请求 Yahoo API) 获取伦敦现货黄金/白银 (XAUUSD=X, XAGUSD=X)。
+        通过 curl_cffi 请求 Yahoo API 获取伦敦现货黄金/白银 (XAUUSD=X, XAGUSD=X)。
         """
         records: list[dict[str, Any]] = []
         if os.getenv("PM_SKIP_YFINANCE", "0") == "1":
             return records
 
         tickers = {"gold": "XAUUSD=X", "silver": "XAGUSD=X"}
-        import requests
         from datetime import datetime
-        
-        # 尝试使用 requests 直接调用 Yahoo chart API 以规避 yfinance 库的频繁封禁
+        try:
+            from curl_cffi import requests as cffi_requests
+        except ImportError:
+            logger.error("缺少 curl_cffi 库，无法抓取 LBMA Yahoo API")
+            return records
+            
         for metal, symbol in tickers.items():
             url = f"https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?range={days}d&interval=1d"
-            headers = {"User-Agent": "Mozilla/5.0"}
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Connection": "keep-alive"
+            }
             
             # 使用项目配置的代理
             from collector.settings import PROXIES, USE_PROXY
-            proxies = PROXIES if USE_PROXY else None
+            proxies = PROXIES if USE_PROXY else {"http": None, "https": None}
             
             try:
-                resp = requests.get(url, headers=headers, proxies=proxies, timeout=15)
+                resp = cffi_requests.get(url, headers=headers, proxies=proxies, impersonate="chrome110", timeout=15)
                 resp.raise_for_status()
                 data = resp.json()
                 
@@ -238,48 +246,14 @@ class PriceFetcher:
                                 "metal": metal,
                                 "price": float(p),
                                 "currency": "USD",
-                                "source": "yahoo_api",
+                                "source": "yahoo_api_cffi",
                             })
-                            
             except Exception as e:
-                logger.warning("LBMA (Yahoo API) %s 现货抓取失败: %s", metal, e)
+                logger.warning("LBMA (Yahoo API cffi) %s 现货抓取失败: %s", metal, e)
 
         if records:
-            logger.info("LBMA 抓取成功，本次使用数据源: [主源] Yahoo JSON Chart API")
-
-        # 如果 requests 也失败，则回退到 yfinance 库
-        if not records:
-            try:
-                import yfinance as yf
-                for metal, symbol in tickers.items():
-                    def _fetch():
-                        ticker = yf.Ticker(symbol)
-                        return ticker.history(period=f"{days}d")
-
-                    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
-                    with ThreadPoolExecutor(max_workers=1) as executor:
-                        future = executor.submit(_fetch)
-                        df = future.result(timeout=15)
-
-                    if df is not None and not df.empty:
-                        df = df.reset_index()
-                        date_col = df.columns[0]
-                        for _, row in df.iterrows():
-                            records.append({
-                                "date": pd.to_datetime(row[date_col]).strftime("%Y-%m-%d"),
-                                "market": "LBMA",
-                                "metal": metal,
-                                "price": float(row["Close"]),
-                                "currency": "USD",
-                                "source": "yfinance_spot",
-                            })
-            except Exception:
-                logger.exception("LBMA 现货 yfinance 兜底抓取失败")
-                
-            if records:
-                logger.info("LBMA 抓取成功，本次使用数据源: [备用源] yfinance")
-
-        logger.info("LBMA 获取 %d 条现货记录", len(records))
+            logger.info("LBMA 获取 %d 条现货记录", len(records))
+            
         return records
 
     def fetch_spot_prices(self, full_history: bool = False) -> list[dict[str, Any]]:

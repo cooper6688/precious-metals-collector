@@ -39,7 +39,19 @@ Modified `fetch_cot_report` in `cftc_fetcher.py`.
 - Maintained CFTC Socrata Open API as Fallback Layer 2.
 - Added explicit data-lineage logging (e.g. `[主源] pycot-reports` vs `[备用源1] akshare`).
 
-### 5. LBMA Spot API Endpoint Bypass
+### 5. 爬虫代理与反封禁增强 (Anti-Scraping Enhancements)
+- **上期所 (SHFE) 仓单数据**:
+  - **问题**: 原有 `requests` 请求被上期所强行拦截抛出 `Remote end closed connection without response`，确认为 TLS 指纹封锁。
+  - **修复**: 引入 `curl_cffi` 库，并设置 `impersonate="chrome110"`。此方法成功伪造真实浏览器底层 TLS/JA3 指纹，安全绕过服务端拦截。
+  - **备选方案尝试记录**: 曾尝试增补 Header (`User-Agent`, `Referer`) 均无济于事，仅 `curl_cffi` 能够穿透。
+- **上海金交所 (SGE) 现货数据**:
+  - **问题**: 官网行情页面 (`/sjzx/mrhq`) 改版，且部署了严格的 Web 应用防火墙 (WAF)。单纯的 `requests` 会返回 `您的访问请求可能对网站造成安全威胁` 的拦截页。
+  - **修复**: 使用 `curl_cffi` 请求配合真实浏览器 Header 即可穿透该 WAF 获取到完整的静态 HTML。同时改进了 PDF 提取的正则逻辑，适配了动态表头的检测。
+- **伦敦贵金属现货 (LBMA)**:
+  - **问题**: Yahoo Finance 的原生和第三方 API (`yfinance`) 均加强了安全限制，直接请求返回 `404 Not Found` (未提供 Crumb)，并发调用立即触发强制限流 `429 Too Many Requests`。
+  - **修复**: 将底层请求替换为 `curl_cffi`，重新伪造请求。曾尝试使用国内的 `akshare` 替代，但该库最新版本的 `spot_goods_sina` 及相关外盘接口不可用或返回空值，故最终方案妥协为增强版的 Yahoo API + `curl_cffi` 穿透。
+
+### 6. LBMA Spot API Endpoint Bypass
 Modified `fetch_lbma_spot` in `price_fetcher.py`.
 - Completely skipped fragile `yfinance` initialization objects.
 - Hooked pure `requests` directly into Yahoo Finance's internal `query2.finance.yahoo.com/v8/finance/chart` JSON API.
