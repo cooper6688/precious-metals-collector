@@ -502,85 +502,112 @@ class InventoryFetcher:
 
     def fetch_sge_pdf(self, date: str | None = None) -> list[dict[str, Any]]:
         """
-        从上海金交所 JSON API 直接提取 PDF 链接，绕过 Vue 动态渲染问题。
+        从上海金交所获取交割库存数据。
+
+        策略层级（按优先级）：
+        1. 使用 StealthyFetcher 渲染 /sjzx/mrhq 页面，通过 page_action 拦截
+           内部 AJAX 请求，从返回的 JSON 中提取文章列表和 PDF 链接。
+        2. 如果拦截失败，则降级直接从已渲染的 DOM 中查找 PDF 链接。
+
+        所有下载的文件都会进行 PDF magic-byte 校验，避免将 HTML 占位页
+        误当作 PDF 解析。
         """
         records: list[dict[str, Any]] = []
-
-        records: list[dict[str, Any]] = []
-        fetcher = Fetcher()
         import os
         import tempfile
-            
-        # SGE 文章列表 API (menuId=1738 为每日行情)
-        api_url = "https://www.sge.com.cn/public/front/findArticleExtList?pageNo=1&pageSize=15&menuId=1738"
-        headers = {
-            "User-Agent": _UA,
-            "Accept": "application/json, text/plain, */*",
-            "Referer": "https://www.sge.com.cn/sjzx/mrhq"
-        }
-        
+
+        url = "https://www.sge.com.cn/sjzx/mrhq"
+        captured_json: list[dict] = []  # 用于在 page_action 中传递数据
+
         try:
-            logger.debug("请求 SGE JSON API: %s", api_url)
-            resp = StealthyFetcher.fetch(
-                api_url, 
-                timeout=15000,
-                headless=False
-            )
+            logger.info("SGE 库存: 使用 AJAX 拦截模式访问 %s", url)
+
+            def _action(page):
+                """在浏览器上下文中拦截 SGE 文章列表的 AJAX 响应。"""
+                try:
+                    # 拦截 findArticleExtList 的 AJAX 响应
+                    def _handle_response(response):
+                        if "findArticleExtList" in response.url:
+                            try:
+                                body = response.json()
+                                if isinstance(body, dict) and "list" in body:
+                                    captured_json.append(body)
+                                    logger.info("SGE AJAX 拦截成功，获取 %d 篇文章", len(body["list"]))
+                            except Exception:
+                                pass
+
+                    page.on("response", _handle_response)
+
+                    # 等待页面渲染完成 (文章列表通常由前端 JS 加载)
+                    page.wait_for_load_state("networkidle", timeout=20000)
+                except Exception as e:
+                    logger.debug("SGE page_action: %s", e)
+
+            resp = StealthyFetcher.fetch(url, timeout=30000, headless=False, page_action=_action)
             if resp.status != 200:
-                logger.warning("SGE JSON API 返回错误状态码: %s", resp.status)
-                return records
-                
-            try:
-                data = json.loads(resp.text)
-            except Exception:
-                logger.error("SGE JSON 解析失败: %s", resp.text[:100])
-                return records
-            
-            articles = data.get("list", [])
-            if not articles:
-                logger.warning("SGE JSON API 未返回文章列表")
+                logger.warning("SGE 页面请求失败: %s", resp.status)
                 return records
 
-            # 寻找最新的“交割”或“交收”类文章
-            target_article = None
-            for item in articles:
-                title = item.get("title", "")
-                if "交割" in title or "交收" in title or "行情" in title:
-                    target_article = item
+            # --- 策略 1: 从拦截的 AJAX JSON 中提取 ---
+            pdf_url = None
+            publish_date = None
+
+            if captured_json:
+                articles = captured_json[0].get("list", [])
+                for item in articles:
+                    title = item.get("title", "")
+                    if any(kw in title for kw in ["交割", "交收"]):
+                        file_url = item.get("fileUrl")
+                        if file_url:
+                            pdf_url = "https://www.sge.com.cn" + file_url if not file_url.startswith("http") else file_url
+                            publish_date = (item.get("publishDate") or "").split(" ")[0]
+                            logger.info("SGE AJAX: 命中文章 '%s' (日期: %s)", title, publish_date)
+                            break
+            else:
+                logger.info("SGE AJAX 拦截未捕获数据，尝试 DOM 降级提取")
+
+            # --- 策略 2: DOM 降级 —— 从渲染后页面中直接寻找 PDF 链接 ---
+            if not pdf_url:
+                for link in resp.css('a[href$=".pdf"]'):
+                    href = link.attrib.get("href", "")
+                    # 排除历史占位文件
+                    if any(old_year in href for old_year in ["/2017", "/2018", "/2019", "/2020"]):
+                        continue
+                    pdf_url = href if href.startswith("http") else "https://www.sge.com.cn" + href
                     break
-            
-            if not target_article:
-                logger.warning("SGE JSON 列表内未找到交割相关报告")
+
+            if not pdf_url:
+                logger.warning("SGE 库存: 未找到可用的 PDF 链接")
                 return records
 
-            pdf_path_relative = target_article.get("fileUrl")
-            if not pdf_path_relative:
-                logger.warning("SGE 文章 '%s' 缺少 PDF 链接", target_article.get("title"))
-                return records
+            if not publish_date:
+                publish_date = datetime.now().strftime("%Y-%m-%d")
 
-            pdf_url = "https://www.sge.com.cn" + pdf_path_relative
-            publish_date = target_article.get("publishDate", "").split(" ")[0]
-            
-            logger.info("准备下载 SGE PDF: %s (发布日期: %s)", pdf_url, publish_date)
-            
-            pdf_resp = StealthyFetcher.fetch(
-                pdf_url, 
-                timeout=30000,
-                headless=False
-            )
+            # --- 下载并校验 PDF ---
+            logger.info("SGE 库存: 下载 PDF %s", pdf_url)
+            pdf_resp = StealthyFetcher.fetch(pdf_url, timeout=30000, headless=False)
             if pdf_resp.status != 200:
-                logger.error("SGE PDF 下载失败: %s", pdf_resp.status)
+                logger.error("SGE PDF 下载失败: HTTP %s", pdf_resp.status)
                 return records
-            
+
+            pdf_bytes = pdf_resp.body
+            # 🚨 Magic-byte 校验：真正的 PDF 以 %PDF 开头
+            if not pdf_bytes or not pdf_bytes[:5].startswith(b"%PDF"):
+                logger.warning(
+                    "SGE PDF 校验失败: 文件头为 %s (非 PDF，可能是 HTML 占位页)",
+                    pdf_bytes[:20] if pdf_bytes else b"(empty)",
+                )
+                return records
+
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                tmp.write(pdf_resp.body)
+                tmp.write(pdf_bytes)
                 tmp_path = tmp.name
 
             records = self._parse_sge_pdf(tmp_path, date_str=publish_date)
             os.remove(tmp_path)
 
         except Exception:
-            logger.exception("SGE JSON 数据抓取或 PDF 解析失败")
+            logger.exception("SGE 库存抓取失败")
 
         return records
 

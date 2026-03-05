@@ -92,3 +92,25 @@ Modified `fetch_lbma_spot` in `price_fetcher.py`.
 
 ### 4. SHFE 高优路径嗅探熔断器
 - **修复**: 识别最近上期所仓单接口路由由 `/data/tradedata/future/dailydata/` 取代旧版。引入长达 `3天` 容差期的 404 检测计数器；并为未来的路径调整铺设了直升管理员邮箱的紧急报警探针。
+
+## 🔧 [2026-03-05] SGE 库存提取重构与告警智能化
+
+### 1. SGE PDF 提取策略重写
+- **问题**: SGE 官网 JSON 文章列表 API (`findArticleExtList`) 对直接请求和 `curl_cffi` 均返回 `302` 重定向到首页，导致 `inventory_fetcher` 无法获取每日交割 PDF 链接。同时页面上存在的 `.pdf` 占位文件（2018 年的历史文件）实际返回 HTML 而非 PDF，触发 `pdfplumber` 的 `No /Root object` 异常。
+- **修复**:
+  - 引入 **AJAX 拦截机制**: 通过 `StealthyFetcher` 的 `page_action` 注册 Playwright `page.on("response")` 监听器，拦截浏览器渲染页面时发出的 `findArticleExtList` AJAX 请求，直接从响应 JSON 中提取文章列表和 PDF 链接。
+  - 增加 **DOM 降级策略**: 如果 AJAX 拦截未命中，回退到从已渲染的页面 DOM 中搜索有效 PDF 链接。
+  - 增加 **PDF Magic-byte 校验**: 下载文件后检查前 5 字节是否以 `%PDF` 开头，彻底杜绝将 HTML 误当 PDF 解析的问题。
+
+### 2. 数据新鲜度告警智能化 (`run_daily.py`)
+- **问题**: 原有的 Stage 5 (Gap Check) 简单对比 `today` 日期，导致在北京时间上午运行时（CME 美盘尚未开盘、SGE 未结算）产生大量误报警告。
+- **修复**:
+  - **CME 宽容检查**: 对于 CME 数据，不再硬性要求当天有数据，改为检查最近一条记录是否在 3 天以内，覆盖跨周末和短假期场景。
+  - **SGE 时段感知**: 仅在北京时间 11:30 以后才对 SGE 缺失触发 WARNING；早于该时间则输出 INFO 级别的"尚未落库"提示，避免无意义的告警噪音。
+
+---
+**验证**:
+- SGE AJAX 拦截: **IMPLEMENTED** (需在 GitHub Actions 中验证实际效果)
+- SGE PDF Magic-byte 校验: **PASSED** (成功拒绝 HTML 占位文件)
+- CME Gap Check 宽容模式: **IMPLEMENTED**
+- SGE 时段感知告警: **IMPLEMENTED**

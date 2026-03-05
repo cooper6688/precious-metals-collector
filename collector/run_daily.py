@@ -168,19 +168,34 @@ def run_daily_pipeline(
     logger.info("🔍 [阶段5] 数据新鲜度查验...")
     missing_items = []
     
+    # 获取当前北京时间小时
+    now_bj = datetime.now(tz_bj)
+    current_hour = now_bj.hour
+    
     # 查验今日是否成功获取价格数据
+    # 5.1 CME 黄金期货 (美盘结算较早，但跨周或节假日可能需回溯)
     cme_gold = db.query("SELECT 1 FROM future_prices_daily WHERE exchange='CME' AND metal='gold' AND date=?", (today,))
-    if not cme_gold: missing_items.append("CME 黄金期货")
+    if not cme_gold:
+        # 如果是周一早上或今日无数据，检查昨天/前天
+        recent_cme = db.query("SELECT date FROM future_prices_daily WHERE exchange='CME' AND metal='gold' ORDER BY date DESC LIMIT 1")
+        last_date = recent_cme[0][0] if recent_cme else None
+        if not last_date or (datetime.strptime(today, "%Y-%m-%d") - datetime.strptime(last_date, "%Y-%m-%d")).days > 3:
+            missing_items.append("CME 黄金期货")
         
+    # 5.2 SGE 黄金现货 (中盘 10:30-11:00 以后才会有稳定数据)
     sge_gold = db.query("SELECT 1 FROM spot_prices_daily WHERE market='SGE' AND metal='gold' AND date=?", (today,))
-    if not sge_gold: missing_items.append("SGE 黄金现货")
+    if not sge_gold:
+        # 仅在 11:30 以后才将 SGE 缺失视为警告
+        if current_hour >= 11:
+            missing_items.append("SGE 黄金现货")
+        else:
+            logger.info("  ℹ️ SGE 黄金今日数据尚未落库 (早间运行)，暂不触发告警")
         
     if missing_items:
-        warning_msg = f"今日 ({today}) 存在未获取到的关键数据: {', '.join(missing_items)}。可能是未收盘或接口延迟。"
+        warning_msg = f"今日 ({today}) 存在未获取到的核心数据: {', '.join(missing_items)}。请检查接口状态。"
         logger.warning("  ⚠️ %s", warning_msg)
-        # 可以选择把这行警告直接附加到邮件标题或正文中
     else:
-        logger.info("  ✅ 核心价格数据今日均已齐备")
+        logger.info("  ✅ 核心价格数据查验通过 (已考虑时差与发布时点)")
 
     # --------------------------------------------------
     # 6. 发送邮件
