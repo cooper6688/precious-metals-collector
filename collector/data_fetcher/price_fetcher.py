@@ -17,6 +17,7 @@ import pandas as pd
 from scrapling import Fetcher, StealthyFetcher
 
 from collector.database import DatabaseManager
+from collector.settings import PROXIES, USE_PROXY
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +41,23 @@ class PriceFetcher:
         Args:
             metal: 'gold' 或 'silver'。
             days: 回溯天数。
-
-        Returns:
-            期货价格记录列表。
         """
+        # 将代理配置同步到环境变量（curl_cffi / yfinance 通过环境变量读取代理）
+        # 🚨 特别优化：在 GitHub Actions 环境中，针对 localhost 代理进行降级处理，避免 CI 连接报错
+        if USE_PROXY:
+            is_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
+            # Assuming PROXIES is a dict and "http" key holds the proxy URL
+            proxy_url = PROXIES.get("http")
+            is_local_proxy = proxy_url and ("127.0.0.1" in proxy_url or "localhost" in proxy_url)
+            
+            if is_github_actions and is_local_proxy:
+                # 在 CI 环境下，如果没配外部代理就强行注入 127.0.0.1 是没用的，且会导致 requests/urllib3 报错
+                # 我们这里选择不注入环境变量，让其走直接连接
+                pass 
+            elif proxy_url:
+                os.environ.setdefault("HTTP_PROXY", proxy_url)
+                os.environ.setdefault("HTTPS_PROXY", proxy_url)
+
         records: list[dict[str, Any]] = []
         if os.getenv("PM_SKIP_YFINANCE", "0") == "1":
             logger.info("CME %s: PM_SKIP_YFINANCE=1, 跳过 yfinance", metal)
@@ -379,7 +393,7 @@ class PriceFetcher:
         for metal, symbol in tickers.items():
             url = f"https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?range={days}d&interval=1d"
             headers = {"User-Agent": "Mozilla/5.0"}
-            proxies = PROXIES if USE_PROXY else {"http": None, "https": None}
+            proxies = PROXIES if (USE_PROXY and os.getenv("GITHUB_ACTIONS") != "true") else {"http": None, "https": None}
             
             try:
                 resp = fetcher.get(url, timeout=15)

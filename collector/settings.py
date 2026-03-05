@@ -70,9 +70,17 @@ PROXIES: dict = {
 USE_PROXY = os.getenv("PM_USE_PROXY", "1") == "1"
 
 # 将代理配置同步到环境变量（curl_cffi / yfinance 通过环境变量读取代理）
+# 🚨 特别优化：在 GitHub Actions 环境中，如果代理是 localhost 则自动跳过，避免 Connection Refused 报错
 if USE_PROXY:
-    os.environ.setdefault("HTTP_PROXY", PROXY_URL)
-    os.environ.setdefault("HTTPS_PROXY", PROXY_URL)
+    is_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
+    is_local_proxy = "127.0.0.1" in PROXY_URL or "localhost" in PROXY_URL
+    
+    if is_github_actions and is_local_proxy:
+        # CI 环境没有本地代理，不注入环境变量以免导致所有请求失败
+        pass
+    else:
+        os.environ.setdefault("HTTP_PROXY", PROXY_URL)
+        os.environ.setdefault("HTTPS_PROXY", PROXY_URL)
 
 
 # ============================================================

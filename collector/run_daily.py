@@ -21,13 +21,14 @@ import time
 from datetime import datetime
 import pytz
 from pathlib import Path
+import os
 
 # 确保项目根目录在 sys.path 中
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from collector.settings import LOGGING_CONFIG, ENVIRONMENT
+from collector.settings import LOGGING_CONFIG, ENVIRONMENT, PROXIES, USE_PROXY, PROXY_URL
 from collector.database import DatabaseManager
 from collector.data_fetcher.inventory_fetcher import InventoryFetcher
 from collector.data_fetcher.price_fetcher import PriceFetcher
@@ -39,6 +40,19 @@ from collector.calculator.price_calculator import PriceCalculator
 from collector.calculator.funding_calculator import FundingCalculator
 from collector.reporter.report_generator import ReportGenerator
 from collector.mailer import EmailSender
+
+# 将代理配置同步到环境变量（curl_cffi / yfinance 通过环境变量读取代理）
+# 🚨 特别优化：在 GitHub Actions 环境中，除非显式提供环境变量且不是 127.0.0.1，否则禁用默认代理
+if USE_PROXY:
+    is_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
+    is_local_proxy = "127.0.0.1" in PROXY_URL or "localhost" in PROXY_URL
+    
+    if is_github_actions and is_local_proxy:
+        logger.info("检测到 GitHub Actions 环境且代理为 Localhost，自动禁用默认代理以避免循环/连接报错")
+        # 不设置环境变量，且可以根据需要更新 USE_PROXY = False
+    else:
+        os.environ.setdefault("HTTP_PROXY", PROXY_URL)
+        os.environ.setdefault("HTTPS_PROXY", PROXY_URL)
 
 logger = logging.getLogger("collector.daily")
 
@@ -89,7 +103,6 @@ def run_daily_pipeline(
         logger.exception("  ❌ 库存抓取失败")
 
     # 2.2 CFTC（周度，可跳过）
-    import os
     if os.getenv("PM_SKIP_CFTC", "0") == "1":
         logger.info("  ⏭️ CFTC: 环境变量 PM_SKIP_CFTC=1，已跳过")
     else:
@@ -178,7 +191,7 @@ def run_daily_pipeline(
     if not cme_gold:
         # 如果是周一早上或今日无数据，检查昨天/前天
         recent_cme = db.query("SELECT date FROM future_prices_daily WHERE exchange='CME' AND metal='gold' ORDER BY date DESC LIMIT 1")
-        last_date = recent_cme[0][0] if recent_cme else None
+        last_date = recent_cme[0]['date'] if recent_cme else None
         if not last_date or (datetime.strptime(today, "%Y-%m-%d") - datetime.strptime(last_date, "%Y-%m-%d")).days > 3:
             missing_items.append("CME 黄金期货")
         
@@ -207,6 +220,7 @@ def run_daily_pipeline(
         try:
             sender = EmailSender()
             db_path = PROJECT_ROOT / "data" / "precious_metals.db"
+            proxies = PROXIES if (USE_PROXY and os.getenv("GITHUB_ACTIONS") != "true") else {"http": None, "https": None}
             success = sender.send_email(html_report, today, attachments=[db_path])
             if success:
                 logger.info("  ✅ 邮件发送成功")
