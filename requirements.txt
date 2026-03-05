@@ -13,3 +13,4 @@ certifi>=2023.7.22
 pytz>=2023.3
 pdfplumber>=0.11.0
 scrapling>=0.2.0
+playwright>=1.40.0
