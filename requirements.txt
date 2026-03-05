@@ -17,3 +17,4 @@ playwright>=1.40.0
 browserforge>=1.2.0
 rebrowser-playwright>=0.50.0
 camoufox>=0.4.0
+patchright>=1.50.0
