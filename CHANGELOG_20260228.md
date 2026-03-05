@@ -114,3 +114,18 @@ Modified `fetch_lbma_spot` in `price_fetcher.py`.
 - SGE PDF Magic-byte 校验: **PASSED** (成功拒绝 HTML 占位文件)
 - CME Gap Check 宽容模式: **IMPLEMENTED**
 - SGE 时段感知告警: **IMPLEMENTED**
+
+### 3. Scrapling 全量依赖补全与 CI 稳定性加固
+- **核心依赖补全**: 
+  - 通过针对 `scrapling` 源码的静态扫描，彻底补全了 CI 环境中缺失的隐藏依赖：`msgspec` (数据模型), `anyio` (异步流水线), `httpx` (网络引擎)。
+  - 目前 `requirements.txt` 已包含 9 个核心支撑包，确保 Scrapling 在无预装环境的容器中实现“即装即用”。
+- **流水线回归修复 (Stabilization)**:
+  - **逻辑修正**: 修复了 `run_daily.py` 查验阶段对数据库字典索引的 `KeyError`。
+  - **环境自适应 Proxy**: 优化了 `settings.py`。新增对 `GITHUB_ACTIONS` 生产环境的感知，若检测到代理为 localhost 则自动进入“直连模式”，彻底消灭了 CI 宿主机因尝试连接本地不存在的 `127.0.0.1:10808` 而导致的连接被拒 (Connection Refused) 报错。
+  - **代码健壮性**: 解决了 `logger` 定义顺序导致的 `NameError`，确保日志流在系统初始化阶段即全面覆盖。
+
+---
+**Verification (Final)**:
+- Scrapling 全量依赖安装: **SUCCESS**
+- GitHub Actions 代理自适应: **SUCCESS** (连接错误已消除)
+- 自动化流水线回归测试: **PASS** (Master 运行成功)
