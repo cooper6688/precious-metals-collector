@@ -41,19 +41,6 @@ from collector.calculator.funding_calculator import FundingCalculator
 from collector.reporter.report_generator import ReportGenerator
 from collector.mailer import EmailSender
 
-# 将代理配置同步到环境变量（curl_cffi / yfinance 通过环境变量读取代理）
-# 🚨 特别优化：在 GitHub Actions 环境中，除非显式提供环境变量且不是 127.0.0.1，否则禁用默认代理
-if USE_PROXY:
-    is_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
-    is_local_proxy = "127.0.0.1" in PROXY_URL or "localhost" in PROXY_URL
-    
-    if is_github_actions and is_local_proxy:
-        logger.info("检测到 GitHub Actions 环境且代理为 Localhost，自动禁用默认代理以避免循环/连接报错")
-        # 不设置环境变量，且可以根据需要更新 USE_PROXY = False
-    else:
-        os.environ.setdefault("HTTP_PROXY", PROXY_URL)
-        os.environ.setdefault("HTTPS_PROXY", PROXY_URL)
-
 logger = logging.getLogger("collector.daily")
 
 
