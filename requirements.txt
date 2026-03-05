@@ -14,3 +14,6 @@ pytz>=2023.3
 pdfplumber>=0.11.0
 scrapling>=0.2.0
 playwright>=1.40.0
+browserforge>=1.2.0
+rebrowser-playwright>=0.50.0
+camoufox>=0.4.0
